@@ -16,7 +16,8 @@
 * @param {number} height - Height of the frame within the texture image.
 * @param {string} name - The name of the frame. In Texture Atlas data this is usually set to the filename.
 */
-Phaser.Frame = function (index, x, y, width, height, name) {
+Phaser.Frame = function (index, x, y, width, height, name)
+{
 
     /**
     * @property {number} index - The index of this Frame within the FrameData set it is being added to.
@@ -42,6 +43,11 @@ Phaser.Frame = function (index, x, y, width, height, name) {
     * @property {number} height - Height of the frame.
     */
     this.height = height;
+
+    if (this.width === 0 || this.height === 0)
+    {
+        console.warn('Phaser.Frame: Frame "' + this.name + '" has a width or height of zero');
+    }
 
     /**
     * @property {string} name - Useful for Texture Atlas files (is set to the filename value).
@@ -130,7 +136,8 @@ Phaser.Frame.prototype = {
     * @param {integer} width - The new width of the Frame.
     * @param {integer} height - The new height of the Frame.
     */
-    resize: function (width, height) {
+    resize: function (width, height)
+    {
 
         this.width = width;
         this.height = height;
@@ -156,7 +163,8 @@ Phaser.Frame.prototype = {
     * @param {number} destWidth - The destination width of the trimmed frame for display.
     * @param {number} destHeight - The destination height of the trimmed frame for display.
     */
-    setTrim: function (trimmed, actualWidth, actualHeight, destX, destY, destWidth, destHeight) {
+    setTrim: function (trimmed, actualWidth, actualHeight, destX, destY, destWidth, destHeight)
+    {
 
         this.trimmed = trimmed;
 
@@ -181,7 +189,8 @@ Phaser.Frame.prototype = {
      * @method Phaser.Frame#clone
      * @return {Phaser.Frame} An exact copy of this Frame object.
      */
-    clone: function () {
+    clone: function ()
+    {
 
         var output = new Phaser.Frame(this.index, this.x, this.y, this.width, this.height, this.name);
 
@@ -204,7 +213,8 @@ Phaser.Frame.prototype = {
     * @param {Phaser.Rectangle} [out] - A rectangle to copy the frame dimensions to.
     * @return {Phaser.Rectangle} A rectangle.
     */
-    getRect: function (out) {
+    getRect: function (out)
+    {
 
         if (out === undefined)
         {

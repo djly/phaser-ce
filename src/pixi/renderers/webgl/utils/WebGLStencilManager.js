@@ -3,11 +3,11 @@
  */
 
 /**
-* @class WebGLStencilManager
+* @class PIXI.WebGLStencilManager
 * @constructor
 * @private
 */
-PIXI.WebGLStencilManager = function()
+PIXI.WebGLStencilManager = function ()
 {
     this.stencilStack = [];
     this.reverse = true;
@@ -16,24 +16,24 @@ PIXI.WebGLStencilManager = function()
 
 /**
 * Sets the drawing context to the one given in parameter.
-* 
-* @method setContext 
+*
+* @method PIXI.WebGLStencilManager#setContext
 * @param gl {WebGLContext} the current WebGL drawing context
 */
-PIXI.WebGLStencilManager.prototype.setContext = function(gl)
+PIXI.WebGLStencilManager.prototype.setContext = function (gl)
 {
     this.gl = gl;
 };
 
 /**
 * Applies the Mask and adds it to the current filter stack.
-* 
-* @method pushMask
+*
+* @method PIXI.WebGLStencilManager#pushMask
 * @param graphics {Graphics}
 * @param webGLData {Array}
 * @param renderSession {Object}
 */
-PIXI.WebGLStencilManager.prototype.pushStencil = function(graphics, webGLData, renderSession)
+PIXI.WebGLStencilManager.prototype.pushStencil = function (graphics, webGLData, renderSession)
 {
     var gl = this.gl;
     this.bindGraphics(graphics, webGLData, renderSession);
@@ -59,8 +59,8 @@ PIXI.WebGLStencilManager.prototype.pushStencil = function(graphics, webGLData, r
 
     if(webGLData.mode === 1)
     {
-        gl.drawElements(gl.TRIANGLE_FAN,  webGLData.indices.length - 4, gl.UNSIGNED_SHORT, 0 );
-       
+        gl.drawElements(gl.TRIANGLE_FAN, webGLData.indices.length - 4, gl.UNSIGNED_SHORT, 0);
+
         if(this.reverse)
         {
             gl.stencilFunc(gl.EQUAL, 0xFF - level, 0xFF);
@@ -73,15 +73,15 @@ PIXI.WebGLStencilManager.prototype.pushStencil = function(graphics, webGLData, r
         }
 
         // draw a quad to increment..
-        gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_SHORT, ( webGLData.indices.length - 4 ) * 2 );
-               
+        gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_SHORT, (webGLData.indices.length - 4) * 2);
+
         if(this.reverse)
         {
-            gl.stencilFunc(gl.EQUAL,0xFF-(level+1), 0xFF);
+            gl.stencilFunc(gl.EQUAL,0xFF - (level + 1), 0xFF);
         }
         else
         {
-            gl.stencilFunc(gl.EQUAL,level+1, 0xFF);
+            gl.stencilFunc(gl.EQUAL,level + 1, 0xFF);
         }
 
         this.reverse = !this.reverse;
@@ -99,15 +99,15 @@ PIXI.WebGLStencilManager.prototype.pushStencil = function(graphics, webGLData, r
             gl.stencilOp(gl.KEEP,gl.KEEP,gl.INCR);
         }
 
-        gl.drawElements(gl.TRIANGLE_STRIP,  webGLData.indices.length, gl.UNSIGNED_SHORT, 0 );
+        gl.drawElements(gl.TRIANGLE_STRIP, webGLData.indices.length, gl.UNSIGNED_SHORT, 0);
 
         if(!this.reverse)
         {
-            gl.stencilFunc(gl.EQUAL,0xFF-(level+1), 0xFF);
+            gl.stencilFunc(gl.EQUAL,0xFF - (level + 1), 0xFF);
         }
         else
         {
-            gl.stencilFunc(gl.EQUAL,level+1, 0xFF);
+            gl.stencilFunc(gl.EQUAL,level + 1, 0xFF);
         }
     }
 
@@ -119,20 +119,20 @@ PIXI.WebGLStencilManager.prototype.pushStencil = function(graphics, webGLData, r
 
 /**
  * TODO this does not belong here!
- * 
- * @method bindGraphics
+ *
+ * @method PIXI.WebGLStencilManager#bindGraphics
  * @param graphics {Graphics}
  * @param webGLData {Array}
  * @param renderSession {Object}
  */
-PIXI.WebGLStencilManager.prototype.bindGraphics = function(graphics, webGLData, renderSession)
+PIXI.WebGLStencilManager.prototype.bindGraphics = function (graphics, webGLData, renderSession)
 {
-    //if(this._currentGraphics === graphics)return;
+    // if(this._currentGraphics === graphics)return;
     this._currentGraphics = graphics;
 
     var gl = this.gl;
 
-     // bind the graphics object..
+    // bind the graphics object..
     var projection = renderSession.projection,
         offset = renderSession.offset,
         shader;// = renderSession.shaderManager.primitiveShader;
@@ -141,10 +141,10 @@ PIXI.WebGLStencilManager.prototype.bindGraphics = function(graphics, webGLData, 
     {
         shader = renderSession.shaderManager.complexPrimitiveShader;
 
-        renderSession.shaderManager.setShader( shader );
+        renderSession.shaderManager.setShader(shader);
 
         gl.uniform1f(shader.flipY, renderSession.flipY);
-       
+
         gl.uniformMatrix3fv(shader.translationMatrix, false, graphics.worldTransform.toArray(true));
 
         gl.uniform2f(shader.projectionVector, projection.x, -projection.y);
@@ -166,9 +166,9 @@ PIXI.WebGLStencilManager.prototype.bindGraphics = function(graphics, webGLData, 
     }
     else
     {
-        //renderSession.shaderManager.activatePrimitiveShader();
+        // renderSession.shaderManager.activatePrimitiveShader();
         shader = renderSession.shaderManager.primitiveShader;
-        renderSession.shaderManager.setShader( shader );
+        renderSession.shaderManager.setShader(shader);
 
         gl.uniformMatrix3fv(shader.translationMatrix, false, graphics.worldTransform.toArray(true));
 
@@ -179,7 +179,7 @@ PIXI.WebGLStencilManager.prototype.bindGraphics = function(graphics, webGLData, 
         gl.uniform3fv(shader.tintColor, Phaser.Color.hexToRGBArray(graphics.tint));
 
         gl.uniform1f(shader.alpha, graphics.worldAlpha);
-        
+
         gl.bindBuffer(gl.ARRAY_BUFFER, webGLData.buffer);
 
         gl.vertexAttribPointer(shader.aVertexPosition, 2, gl.FLOAT, false, 4 * 6, 0);
@@ -191,16 +191,16 @@ PIXI.WebGLStencilManager.prototype.bindGraphics = function(graphics, webGLData, 
 };
 
 /**
- * @method popStencil
+ * @method PIXI.WebGLStencilManager#popStencil
  * @param graphics {Graphics}
  * @param webGLData {Array}
  * @param renderSession {Object}
  */
-PIXI.WebGLStencilManager.prototype.popStencil = function(graphics, webGLData, renderSession)
+PIXI.WebGLStencilManager.prototype.popStencil = function (graphics, webGLData, renderSession)
 {
-	var gl = this.gl;
+    var gl = this.gl;
     this.stencilStack.pop();
-   
+
     this.count--;
 
     if(this.stencilStack.length === 0)
@@ -217,34 +217,34 @@ PIXI.WebGLStencilManager.prototype.popStencil = function(graphics, webGLData, re
         this.bindGraphics(graphics, webGLData, renderSession);
 
         gl.colorMask(false, false, false, false);
-    
+
         if(webGLData.mode === 1)
         {
             this.reverse = !this.reverse;
 
             if(this.reverse)
             {
-                gl.stencilFunc(gl.EQUAL, 0xFF - (level+1), 0xFF);
+                gl.stencilFunc(gl.EQUAL, 0xFF - (level + 1), 0xFF);
                 gl.stencilOp(gl.KEEP,gl.KEEP,gl.INCR);
             }
             else
             {
-                gl.stencilFunc(gl.EQUAL,level+1, 0xFF);
+                gl.stencilFunc(gl.EQUAL,level + 1, 0xFF);
                 gl.stencilOp(gl.KEEP,gl.KEEP,gl.DECR);
             }
 
             // draw a quad to increment..
-            gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_SHORT, ( webGLData.indices.length - 4 ) * 2 );
-            
+            gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_SHORT, (webGLData.indices.length - 4) * 2);
+
             gl.stencilFunc(gl.ALWAYS,0,0xFF);
             gl.stencilOp(gl.KEEP,gl.KEEP,gl.INVERT);
 
             // draw the triangle strip!
-            gl.drawElements(gl.TRIANGLE_FAN,  webGLData.indices.length - 4, gl.UNSIGNED_SHORT, 0 );
-           
+            gl.drawElements(gl.TRIANGLE_FAN, webGLData.indices.length - 4, gl.UNSIGNED_SHORT, 0);
+
             if(!this.reverse)
             {
-                gl.stencilFunc(gl.EQUAL,0xFF-(level), 0xFF);
+                gl.stencilFunc(gl.EQUAL,0xFF - (level), 0xFF);
             }
             else
             {
@@ -254,23 +254,23 @@ PIXI.WebGLStencilManager.prototype.popStencil = function(graphics, webGLData, re
         }
         else
         {
-          //  console.log("<<>>")
+            //  console.log("<<>>")
             if(!this.reverse)
             {
-                gl.stencilFunc(gl.EQUAL, 0xFF - (level+1), 0xFF);
+                gl.stencilFunc(gl.EQUAL, 0xFF - (level + 1), 0xFF);
                 gl.stencilOp(gl.KEEP,gl.KEEP,gl.INCR);
             }
             else
             {
-                gl.stencilFunc(gl.EQUAL,level+1, 0xFF);
+                gl.stencilFunc(gl.EQUAL,level + 1, 0xFF);
                 gl.stencilOp(gl.KEEP,gl.KEEP,gl.DECR);
             }
 
-            gl.drawElements(gl.TRIANGLE_STRIP,  webGLData.indices.length, gl.UNSIGNED_SHORT, 0 );
+            gl.drawElements(gl.TRIANGLE_STRIP, webGLData.indices.length, gl.UNSIGNED_SHORT, 0);
 
             if(!this.reverse)
             {
-                gl.stencilFunc(gl.EQUAL,0xFF-(level), 0xFF);
+                gl.stencilFunc(gl.EQUAL,0xFF - (level), 0xFF);
             }
             else
             {
@@ -287,10 +287,10 @@ PIXI.WebGLStencilManager.prototype.popStencil = function(graphics, webGLData, re
 
 /**
 * Destroys the mask stack.
-* 
-* @method destroy
+*
+* @method PIXI.WebGLStencilManager#destroy
 */
-PIXI.WebGLStencilManager.prototype.destroy = function()
+PIXI.WebGLStencilManager.prototype.destroy = function ()
 {
     this.stencilStack = null;
     this.gl = null;

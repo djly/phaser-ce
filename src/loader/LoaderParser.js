@@ -13,17 +13,20 @@ Phaser.LoaderParser = {
 
     /**
     * Alias for xmlBitmapFont, for backwards compatibility.
-    * 
+    *
     * @method Phaser.LoaderParser.bitmapFont
     * @param {object} xml - XML data you want to parse.
     * @param {PIXI.BaseTexture} baseTexture - The BaseTexture this font uses.
     * @param {number} [xSpacing=0] - Additional horizontal spacing between the characters.
     * @param {number} [ySpacing=0] - Additional vertical spacing between the characters.
+    * @param {Phaser.Frame} [frame] - Optional Frame, if this font is embedded in a texture atlas.
+    * @param {number} [resolution=1] - Optional game resolution to apply to the kerning data.
     * @return {object} The parsed Bitmap Font data.
     */
-    bitmapFont: function (xml, baseTexture, xSpacing, ySpacing) {
+    bitmapFont: function (xml, baseTexture, xSpacing, ySpacing, frame, resolution)
+    {
 
-        return this.xmlBitmapFont(xml, baseTexture, xSpacing, ySpacing);
+        return this.xmlBitmapFont(xml, baseTexture, xSpacing, ySpacing, frame, resolution);
 
     },
 
@@ -36,10 +39,16 @@ Phaser.LoaderParser = {
     * @param {number} [xSpacing=0] - Additional horizontal spacing between the characters.
     * @param {number} [ySpacing=0] - Additional vertical spacing between the characters.
     * @param {Phaser.Frame} [frame] - Optional Frame, if this font is embedded in a texture atlas.
-    * @param {number} [resolution] - Optional game resolution to apply to the kerning data.
+    * @param {number} [resolution=1] - Optional game resolution to apply to the kerning data.
     * @return {object} The parsed Bitmap Font data.
     */
-    xmlBitmapFont: function (xml, baseTexture, xSpacing, ySpacing, frame, resolution) {
+    xmlBitmapFont: function (xml, baseTexture, xSpacing, ySpacing, frame, resolution)
+    {
+
+        if (resolution == null)
+        {
+            resolution = 1;
+        }
 
         var data = {};
         var info = xml.getElementsByTagName('info')[0];
@@ -59,9 +68,9 @@ Phaser.LoaderParser = {
         {
             var charCode = parseInt(letters[i].getAttribute('id'), 10);
 
-            data.chars[charCode] = {
-                x: x + parseInt(letters[i].getAttribute('x'), 10),
-                y: y + parseInt(letters[i].getAttribute('y'), 10),
+            var char = data.chars[charCode] = {
+                x: parseInt(letters[i].getAttribute('x'), 10),
+                y: parseInt(letters[i].getAttribute('y'), 10),
                 width: parseInt(letters[i].getAttribute('width'), 10),
                 height: parseInt(letters[i].getAttribute('height'), 10),
                 xOffset: parseInt(letters[i].getAttribute('xoffset'), 10) / resolution,
@@ -69,6 +78,33 @@ Phaser.LoaderParser = {
                 xAdvance: (parseInt(letters[i].getAttribute('xadvance'), 10) + xSpacing) / resolution,
                 kerning: {}
             };
+            if (frame && frame.trimmed)
+            {
+                if (char.x + char.width > frame.spriteSourceSizeX + frame.spriteSourceSizeW)
+                {
+                    char.width -= char.x + char.width - frame.spriteSourceSizeX - frame.spriteSourceSizeW;
+                }
+                if (char.y + char.height > frame.spriteSourceSizeY + frame.spriteSourceSizeH)
+                {
+                    char.height -= char.y + char.height - frame.spriteSourceSizeY - frame.spriteSourceSizeH;
+                }
+                if (char.x < frame.spriteSourceSizeX)
+                {
+                    var diff = frame.spriteSourceSizeX - char.x;
+                    char.x = 0;
+                    char.width -= diff;
+                    char.xOffset += diff;
+                }
+                if (char.y < frame.spriteSourceSizeY)
+                {
+                    var diff = frame.spriteSourceSizeY - char.y;
+                    char.y = 0;
+                    char.height -= diff;
+                    char.yOffset += diff;
+                }
+            }
+            char.x += x;
+            char.y += y;
         }
 
         var kernings = xml.getElementsByTagName('kerning');
@@ -79,7 +115,10 @@ Phaser.LoaderParser = {
             var second = parseInt(kernings[i].getAttribute('second'), 10);
             var amount = parseInt(kernings[i].getAttribute('amount'), 10) / resolution;
 
-            data.chars[second].kerning[first] = amount;
+            if (data.chars[second])
+            {
+                data.chars[second].kerning[first] = amount;
+            }
         }
 
         return this.finalizeBitmapFont(baseTexture, data);
@@ -95,10 +134,16 @@ Phaser.LoaderParser = {
     * @param {number} [xSpacing=0] - Additional horizontal spacing between the characters.
     * @param {number} [ySpacing=0] - Additional vertical spacing between the characters.
     * @param {Phaser.Frame} [frame] - Optional Frame, if this font is embedded in a texture atlas.
-    * @param {number} [resolution] - Optional game resolution to apply to the kerning data.
+    * @param {number} [resolution=1] - Optional game resolution to apply to the kerning data.
     * @return {object} The parsed Bitmap Font data.
     */
-    jsonBitmapFont: function (json, baseTexture, xSpacing, ySpacing, frame, resolution) {
+    jsonBitmapFont: function (json, baseTexture, xSpacing, ySpacing, frame, resolution)
+    {
+
+        if (resolution == null)
+        {
+            resolution = 1;
+        }
 
         var data = {
             font: json.font.info._face,
@@ -110,15 +155,16 @@ Phaser.LoaderParser = {
         var x = (frame) ? frame.x : 0;
         var y = (frame) ? frame.y : 0;
 
-        json.font.chars["char"].forEach(
+        json.font.chars.char.forEach(
 
-            function parseChar(letter) {
+            function parseChar (letter)
+            {
 
                 var charCode = parseInt(letter._id, 10);
 
-                data.chars[charCode] = {
-                    x: x + parseInt(letter._x, 10),
-                    y: y + parseInt(letter._y, 10),
+                var char = data.chars[charCode] = {
+                    x: parseInt(letter._x, 10),
+                    y: parseInt(letter._y, 10),
                     width: parseInt(letter._width, 10),
                     height: parseInt(letter._height, 10),
                     xOffset: parseInt(letter._xoffset, 10) / resolution,
@@ -126,6 +172,33 @@ Phaser.LoaderParser = {
                     xAdvance: (parseInt(letter._xadvance, 10) + xSpacing) / resolution,
                     kerning: {}
                 };
+                if (frame && frame.trimmed)
+                {
+                    if (char.x + char.width > frame.spriteSourceSizeX + frame.spriteSourceSizeW)
+                    {
+                        char.width -= char.x + char.width - frame.spriteSourceSizeX - frame.spriteSourceSizeW;
+                    }
+                    if (char.y + char.height > frame.spriteSourceSizeY + frame.spriteSourceSizeH)
+                    {
+                        char.height -= char.y + char.height - frame.spriteSourceSizeY - frame.spriteSourceSizeH;
+                    }
+                    if (char.x < frame.spriteSourceSizeX)
+                    {
+                        var diff = frame.spriteSourceSizeX - char.x;
+                        char.x = 0;
+                        char.width -= diff;
+                        char.xOffset += diff;
+                    }
+                    if (char.y < frame.spriteSourceSizeY)
+                    {
+                        var diff = frame.spriteSourceSizeY - char.y;
+                        char.y = 0;
+                        char.height -= diff;
+                        char.yOffset += diff;
+                    }
+                }
+                char.x += x;
+                char.y += y;
             }
 
         );
@@ -134,10 +207,12 @@ Phaser.LoaderParser = {
         {
             json.font.kernings.kerning.forEach(
 
-                function parseKerning(kerning) {
-
-                    data.chars[kerning._second].kerning[kerning._first] = parseInt(kerning._amount, 10) / resolution;
-
+                function parseKerning (kerning)
+                {
+                    if (data.chars[kerning._second])
+                    {
+                        data.chars[kerning._second].kerning[kerning._first] = parseInt(kerning._amount, 10) / resolution;
+                    }
                 }
 
             );
@@ -156,11 +231,13 @@ Phaser.LoaderParser = {
     * @param {object} bitmapFontData - Pre-parsed bitmap font data.
     * @return {object} The parsed Bitmap Font data.
     */
-    finalizeBitmapFont: function (baseTexture, bitmapFontData) {
+    finalizeBitmapFont: function (baseTexture, bitmapFontData)
+    {
 
         Object.keys(bitmapFontData.chars).forEach(
 
-            function addTexture(charCode) {
+            function addTexture (charCode)
+            {
 
                 var letter = bitmapFontData.chars[charCode];
 
@@ -181,7 +258,8 @@ Phaser.LoaderParser = {
     * @param {ArrayBuffer} arrayBuffer
     * @return {object} The parsed PVR file including texture data.
     */
-    pvr: function (arrayBuffer) {
+    pvr: function (arrayBuffer)
+    {
 
         // Reference: http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
         // PVR 3 header structure
@@ -211,16 +289,23 @@ Phaser.LoaderParser = {
                 0, 1, 2, 3,
                 6, 7, 9, 11
             ].indexOf(pixelFormat) >= 0
-        ) {
-            if (pixelFormat >= 0 && pixelFormat <= 3) {
+        )
+        {
+            if (pixelFormat >= 0 && pixelFormat <= 3)
+            {
                 compressionAlgorithm = 'PVRTC';
-            } else if (pixelFormat >= 7 && pixelFormat <= 11) {
+            }
+            else if (pixelFormat >= 7 && pixelFormat <= 11)
+            {
                 compressionAlgorithm = 'S3TC';
-            } else if (pixelFormat === 6) {
+            }
+            else if (pixelFormat === 6)
+            {
                 compressionAlgorithm = 'ETC1';
             }
 
-            switch (pixelFormat) {
+            switch (pixelFormat)
+            {
                 case 0:
                     glExtensionFormat = 0x8C01;
                     break;
@@ -280,7 +365,8 @@ Phaser.LoaderParser = {
     * @param {ArrayBuffer} arrayBuffer
     * @return {object} The parsed DDS file including texture data.
     */
-    dds: function (arrayBuffer) {
+    dds: function (arrayBuffer)
+    {
 
         // Reference at: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx
         // DDS header structure
@@ -321,7 +407,8 @@ Phaser.LoaderParser = {
         if (byteArray[0] === 0x44 &&
             byteArray[1] === 0x44 &&
             byteArray[2] === 0x53 &&
-            byteArray[3] === 0x20) {
+            byteArray[3] === 0x20)
+        {
             ddsHeader = {
                 complete: true,
                 fileFormat: 'DDS',
@@ -357,12 +444,21 @@ Phaser.LoaderParser = {
                 arraySize: null,
                 textureData: byteArray.subarray(uintArray[1] + 4, byteArray.byteLength)
             };
-            if (ddsHeader.formatFourCC === 'DX10') {
+            if (ddsHeader.formatFourCC === 'DX10')
+            {
                 ddsHeader.DXGIFormat = uintArray[31];
                 ddsHeader.resourceDimension = uintArray[32];
                 ddsHeader.miscFlag = uintArray[33];
                 ddsHeader.arraySize = uintArray[34];
                 ddsHeader.miscFlag = uintArray[35];
+            }
+            else if(ddsHeader.formatFourCC === 'DXT5')
+            {
+                ddsHeader.glExtensionFormat = 0x83F3;
+            }
+            else if(ddsHeader.formatFourCC === 'DXT3')
+            {
+                ddsHeader.glExtensionFormat = 0x83F2;
             }
         }
 
@@ -377,7 +473,8 @@ Phaser.LoaderParser = {
     * @param {ArrayBuffer} arrayBuffer
     * @return {object} The parsed KTX file including texture data.
     */
-    ktx: function (arrayBuffer) {
+    ktx: function (arrayBuffer)
+    {
 
         // Reference: https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
         // KTX header structure
@@ -415,16 +512,21 @@ Phaser.LoaderParser = {
             byteArray[6] === 0x31 && byteArray[7] === 0xBB &&
             byteArray[8] === 0x0D && byteArray[9] === 0x0A &&
             byteArray[10] === 0x1A && byteArray[11] === 0x0A &&
-            //Check if internal GL format is supported by WebGL
+
+            // Check if internal GL format is supported by WebGL
             [
                 // ETC1
                 0x8D64,
-                // PVRTC 
-                0x8C00, 0x8C01, 0x8C02, 0x8C03, 
+
+                // PVRTC
+                0x8C00, 0x8C01, 0x8C02, 0x8C03,
+
                 // DXTC | S3TC
                 0x83F0, 0x83F1, 0x83F2, 0x83F3
-            ].indexOf(glInternalFormat) >= 0) {
-            switch (glInternalFormat) {
+            ].indexOf(glInternalFormat) >= 0)
+        {
+            switch (glInternalFormat)
+            {
                 case 0x8D64:
                     compressionAlgorithm = 'ETC1';
                     break;
@@ -476,7 +578,8 @@ Phaser.LoaderParser = {
     * @param {ArrayBuffer} arrayBuffer
     * @return {object} The parsed PKM file including texture data.
     */
-    pkm: function (arrayBuffer) {
+    pkm: function (arrayBuffer)
+    {
 
         // PKM header structure
         // ---------------------------------------
@@ -495,7 +598,8 @@ Phaser.LoaderParser = {
         if (byteArray[0] === 0x50 &&
             byteArray[1] === 0x4B &&
             byteArray[2] === 0x4D &&
-            byteArray[3] === 0x20) {
+            byteArray[3] === 0x20)
+        {
 
             pkmHeader = {
                 complete: true,

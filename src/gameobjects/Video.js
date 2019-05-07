@@ -35,7 +35,8 @@
 * @param {string|null} [key=null] - The key of the video file in the Phaser.Cache that this Video object will play. Set to `null` or leave undefined if you wish to use a webcam as the source. See `startMediaStream` to start webcam capture.
 * @param {string|null} [url=null] - If the video hasn't been loaded then you can provide a full URL to the file here (make sure to set key to null)
 */
-Phaser.Video = function (game, key, url) {
+Phaser.Video = function (game, key, url)
+{
 
     if (key === undefined) { key = null; }
     if (url === undefined) { url = null; }
@@ -111,6 +112,19 @@ Phaser.Video = function (game, key, url) {
     * @property {Phaser.Signal} onTimeout
     */
     this.onTimeout = new Phaser.Signal();
+
+    /**
+    * This signal is dispatched when the Video is unlocked.
+    * @property {Phaser.Signal} onTouchUnlock
+    */
+    this.onTouchUnlock = new Phaser.Signal();
+
+    /**
+    * Start playing the video when it's unlocked.
+    * @property {boolean} playWhenUnlocked
+    * @default
+    */
+    this.playWhenUnlocked = true;
 
     /**
     * @property {integer} timeout - The amount of ms allowed to elapsed before the Video.onTimeout signal is dispatched while waiting for webcam access.
@@ -299,16 +313,14 @@ Phaser.Video = function (game, key, url) {
         this.snapshot = new Phaser.BitmapData(this.game, '', this.width, this.height);
     }
 
-    if (!this.game.device.cocoonJS && (this.game.device.iOS || this.game.device.android) || (window['PhaserGlobal'] && window['PhaserGlobal'].fakeiOSTouchLock))
+    if (this.game.device.needsTouchUnlock())
     {
         this.setTouchLock();
     }
     else
+    if (_video)
     {
-        if (_video)
-        {
-            _video.locked = false;
-        }
+        _video.locked = false;
     }
 
 };
@@ -323,7 +335,8 @@ Phaser.Video.prototype = {
      * @param {MediaStream} stream - The Video Stream data.
      * @return {Phaser.Video} This Video object for method chaining.
      */
-    connectToMediaStream: function (video, stream) {
+    connectToMediaStream: function (video, stream)
+    {
 
         if (video && stream)
         {
@@ -360,7 +373,8 @@ Phaser.Video.prototype = {
      * @param {integer} [height] - The height is used to create the video stream. If not provided the video height will be set to the height of the webcam input source.
      * @return {Phaser.Video} This Video object for method chaining or false if the device doesn't support getUserMedia.
      */
-    startMediaStream: function (captureAudio, width, height) {
+    startMediaStream: function (captureAudio, width, height)
+    {
 
         if (captureAudio === undefined) { captureAudio = false; }
         if (width === undefined) { width = null; }
@@ -374,7 +388,7 @@ Phaser.Video.prototype = {
 
         if (this.videoStream !== null)
         {
-            if (this.videoStream['active'])
+            if (this.videoStream.active)
             {
                 this.videoStream.active = false;
             }
@@ -386,8 +400,9 @@ Phaser.Video.prototype = {
 
         this.removeVideoElement();
 
-        this.video = document.createElement("video");
+        this.video = document.createElement('video');
         this.video.setAttribute('autoplay', 'autoplay');
+        this.video.setAttribute('playsinline', 'playsinline');
 
         if (width !== null)
         {
@@ -403,9 +418,10 @@ Phaser.Video.prototype = {
 
         this._timeOutID = window.setTimeout(this.getUserMediaTimeout.bind(this), this.timeout);
 
-        try {
+        try
+        {
             navigator.getUserMedia(
-                { "audio": captureAudio, "video": true },
+                { audio: captureAudio, video: true },
                 this.getUserMediaSuccess.bind(this),
                 this.getUserMediaError.bind(this)
             );
@@ -423,7 +439,8 @@ Phaser.Video.prototype = {
      * @method Phaser.Video#getUserMediaTimeout
      * @private
      */
-    getUserMediaTimeout: function () {
+    getUserMediaTimeout: function ()
+    {
 
         clearTimeout(this._timeOutID);
 
@@ -435,7 +452,8 @@ Phaser.Video.prototype = {
      * @method Phaser.Video#getUserMediaError
      * @private
      */
-    getUserMediaError: function (event) {
+    getUserMediaError: function (event)
+    {
 
         clearTimeout(this._timeOutID);
 
@@ -447,7 +465,8 @@ Phaser.Video.prototype = {
      * @method Phaser.Video#getUserMediaSuccess
      * @private
      */
-    getUserMediaSuccess: function (stream) {
+    getUserMediaSuccess: function (stream)
+    {
 
         clearTimeout(this._timeOutID);
 
@@ -459,6 +478,10 @@ Phaser.Video.prototype = {
         {
             this.video.mozSrcObject = stream;
         }
+        else if (this.video.srcObject !== undefined)
+        {
+            this.video.srcObject = stream;
+        }
         else
         {
             this.video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
@@ -466,11 +489,13 @@ Phaser.Video.prototype = {
 
         var self = this;
 
-        this.video.onloadeddata = function () {
+        this.video.onloadeddata = function ()
+        {
 
             var retry = 10;
 
-            function checkStream () {
+            function checkStream ()
+            {
 
                 if (retry > 0)
                 {
@@ -482,7 +507,7 @@ Phaser.Video.prototype = {
 
                         if (isNaN(self.video.videoHeight))
                         {
-                            height = width / (4/3);
+                            height = width / (4 / 3);
                         }
 
                         self.video.play();
@@ -519,13 +544,15 @@ Phaser.Video.prototype = {
      * @param {Blob} blob - The Blob containing the video data.
      * @return {Phaser.Video} This Video object for method chaining.
      */
-    createVideoFromBlob: function (blob) {
+    createVideoFromBlob: function (blob)
+    {
 
         var _this = this;
 
-        this.video = document.createElement("video");
+        this.video = document.createElement('video');
         this.video.controls = false;
         this.video.setAttribute('autoplay', 'autoplay');
+        this.video.setAttribute('playsinline', 'playsinline');
         this.video.addEventListener('loadeddata', function (event) { _this.updateTexture(event); }, true);
         this.video.src = window.URL.createObjectURL(blob);
         this.video.canplay = true;
@@ -542,7 +569,8 @@ Phaser.Video.prototype = {
      * @param {boolean} [autoplay=false] - Automatically start the video?
      * @return {Phaser.Video} This Video object for method chaining.
      */
-    createVideoFromURL: function (url, autoplay) {
+    createVideoFromURL: function (url, autoplay)
+    {
 
         if (autoplay === undefined) { autoplay = false; }
 
@@ -552,13 +580,15 @@ Phaser.Video.prototype = {
             this.texture.valid = false;
         }
 
-        this.video = document.createElement("video");
+        this.video = document.createElement('video');
         this.video.controls = false;
 
         if (autoplay)
         {
             this.video.setAttribute('autoplay', 'autoplay');
         }
+
+        this.video.setAttribute('playsinline', 'playsinline');
 
         this.video.src = url;
 
@@ -585,7 +615,8 @@ Phaser.Video.prototype = {
      * @param {integer} [width] - The new width of the video. If undefined `video.videoWidth` is used.
      * @param {integer} [height] - The new height of the video. If undefined `video.videoHeight` is used.
      */
-    updateTexture: function (event, width, height) {
+    updateTexture: function (event, width, height)
+    {
 
         var change = false;
 
@@ -633,7 +664,8 @@ Phaser.Video.prototype = {
      *
      * @method Phaser.Video#complete
      */
-    complete: function () {
+    complete: function ()
+    {
 
         this.onComplete.dispatch(this);
 
@@ -641,7 +673,7 @@ Phaser.Video.prototype = {
 
     /**
      * Starts this video playing.
-     * 
+     *
      * If the video is already playing, or has been queued to play with `changeSource` then this method just returns.
      *
      * @method Phaser.Video#play
@@ -649,7 +681,8 @@ Phaser.Video.prototype = {
      * @param {number} [playbackRate=1] - The playback rate of the video. 1 is normal speed, 2 is x2 speed, and so on. You cannot set a negative playback rate.
      * @return {Phaser.Video} This Video object for method chaining.
      */
-    play: function (loop, playbackRate) {
+    play: function (loop, playbackRate)
+    {
 
         if (this._pendingChangeSource)
         {
@@ -726,7 +759,8 @@ Phaser.Video.prototype = {
      * @method Phaser.Video#playHandler
      * @private
      */
-    playHandler: function () {
+    playHandler: function ()
+    {
 
         this.video.removeEventListener('playing', this._playCallback, true);
 
@@ -748,7 +782,8 @@ Phaser.Video.prototype = {
      * @method Phaser.Video#stop
      * @return {Phaser.Video} This Video object for method chaining.
      */
-    stop: function () {
+    stop: function ()
+    {
 
         if (this.game.sound.onMute)
         {
@@ -768,26 +803,30 @@ Phaser.Video.prototype = {
                 this.video.mozSrcObject.stop();
                 this.video.src = null;
             }
+            else if (this.video.srcObject)
+            {
+                this.video.srcObject.stop();
+                this.video.src = null;
+            }
             else
             {
                 this.video.src = '';
 
-                if (this.videoStream['active'])
+                if (this.videoStream.active)
                 {
                     this.videoStream.active = false;
                 }
                 else
+                if (this.videoStream.getTracks)
                 {
-                    if (this.videoStream.getTracks)
+                    this.videoStream.getTracks().forEach(function (track)
                     {
-                        this.videoStream.getTracks().forEach(function (track) {
-                            track.stop();
-                        });
-                    }
-                    else
-                    {
-                        this.videoStream.stop();
-                    }
+                        track.stop();
+                    });
+                }
+                else
+                {
+                    this.videoStream.stop();
                 }
             }
 
@@ -822,13 +861,14 @@ Phaser.Video.prototype = {
     * @param {Phaser.Sprite|Phaser.Sprite[]|Phaser.Image|Phaser.Image[]} object - Either a single Sprite/Image or an Array of Sprites/Images.
     * @return {Phaser.Video} This Video object for method chaining.
     */
-    add: function (object) {
+    add: function (object)
+    {
 
         if (Array.isArray(object))
         {
             for (var i = 0; i < object.length; i++)
             {
-                if (object[i]['loadTexture'])
+                if (object[i].loadTexture)
                 {
                     object[i].loadTexture(this);
                 }
@@ -855,7 +895,8 @@ Phaser.Video.prototype = {
     * @param {number} [scaleY=1] - The vertical scale factor of the Image. A value of 1 means no scaling. 2 would be twice the size, and so on.
     * @return {Phaser.Image} The newly added Image object.
     */
-    addToWorld: function (x, y, anchorX, anchorY, scaleX, scaleY) {
+    addToWorld: function (x, y, anchorX, anchorY, scaleX, scaleY)
+    {
 
         scaleX = scaleX || 1;
         scaleY = scaleY || 1;
@@ -876,7 +917,8 @@ Phaser.Video.prototype = {
     *
     * @method Phaser.Video#render
     */
-    render: function () {
+    render: function ()
+    {
 
         if (!this.disableTextureUpload && this.playing)
         {
@@ -891,7 +933,8 @@ Phaser.Video.prototype = {
     * @method Phaser.Video#setMute
     * @private
     */
-    setMute: function () {
+    setMute: function ()
+    {
 
         if (this._muted)
         {
@@ -910,7 +953,8 @@ Phaser.Video.prototype = {
     * @method Phaser.Video#unsetMute
     * @private
     */
-    unsetMute: function () {
+    unsetMute: function ()
+    {
 
         if (!this._muted || this._codeMuted)
         {
@@ -929,7 +973,8 @@ Phaser.Video.prototype = {
     * @method Phaser.Video#setPause
     * @private
     */
-    setPause: function () {
+    setPause: function ()
+    {
 
         if (this._paused || this.touchLocked)
         {
@@ -948,7 +993,8 @@ Phaser.Video.prototype = {
     * @method Phaser.Video#setResume
     * @private
     */
-    setResume: function () {
+    setResume: function ()
+    {
 
         if (!this._paused || this._codePaused || this.touchLocked)
         {
@@ -985,7 +1031,8 @@ Phaser.Video.prototype = {
      * @param {boolean} [autoplay=true] - Should the video play automatically after the source has been updated?
      * @return {Phaser.Video} This Video object for method chaining.
      */
-    changeSource: function (src, autoplay) {
+    changeSource: function (src, autoplay)
+    {
 
         if (autoplay === undefined) { autoplay = true; }
 
@@ -1021,7 +1068,8 @@ Phaser.Video.prototype = {
     * @method Phaser.Video#checkVideoProgress
     * @private
     */
-    checkVideoProgress: function () {
+    checkVideoProgress: function ()
+    {
 
         // if (this.video.readyState === 2 || this.video.readyState === 4)
         if (this.video.readyState === 4)
@@ -1053,9 +1101,10 @@ Phaser.Video.prototype = {
     *
     * @method Phaser.Video#setTouchLock
     */
-    setTouchLock: function () {
+    setTouchLock: function ()
+    {
 
-        this.game.input.touch.addTouchLockCallback(this.unlock, this);
+        this.game.input.addTouchLockCallback(this.unlock, this, true);
         this.touchLocked = true;
 
     },
@@ -1067,13 +1116,17 @@ Phaser.Video.prototype = {
     *
     * @method Phaser.Video#unlock
     */
-    unlock: function () {
+    unlock: function ()
+    {
 
         this.touchLocked = false;
 
-        this.video.play();
+        if (this.playWhenUnlocked)
+        {
+            this.video.play();
 
-        this.onPlay.dispatch(this, this.loop, this.playbackRate);
+            this.onPlay.dispatch(this, this.loop, this.playbackRate);
+        }
 
         if (this.key)
         {
@@ -1084,6 +1137,8 @@ Phaser.Video.prototype = {
                 _video.locked = false;
             }
         }
+
+        this.onTouchUnlock.dispatch(this);
 
         return true;
 
@@ -1102,7 +1157,8 @@ Phaser.Video.prototype = {
      * @param {string} [blendMode=null] - The composite blend mode that will be used when drawing. The default is no blend mode at all. This is a Canvas globalCompositeOperation value such as 'lighter' or 'xor'.
      * @return {Phaser.BitmapData} A reference to the Video.snapshot BitmapData object for further method chaining.
      */
-    grab: function (clear, alpha, blendMode) {
+    grab: function (clear, alpha, blendMode)
+    {
 
         if (clear === undefined) { clear = false; }
         if (alpha === undefined) { alpha = 1; }
@@ -1131,7 +1187,8 @@ Phaser.Video.prototype = {
      *
      * @method Phaser.Video#removeVideoElement
      */
-    removeVideoElement: function () {
+    removeVideoElement: function ()
+    {
 
         if (!this.video)
         {
@@ -1161,7 +1218,8 @@ Phaser.Video.prototype = {
      *
      * @method Phaser.Video#destroy
      */
-    destroy: function () {
+    destroy: function ()
+    {
 
         this.stop();
 
@@ -1169,7 +1227,7 @@ Phaser.Video.prototype = {
 
         if (this.touchLocked)
         {
-            this.game.input.touch.removeTouchLockCallback(this.unlock, this);
+            this.game.input.removeTouchLockCallback(this.unlock, this);
         }
 
         if (this._retryID)
@@ -1185,15 +1243,17 @@ Phaser.Video.prototype = {
 * @name Phaser.Video#currentTime
 * @property {number} currentTime - The current time of the video in seconds. If set the video will attempt to seek to that point in time.
 */
-Object.defineProperty(Phaser.Video.prototype, "currentTime", {
+Object.defineProperty(Phaser.Video.prototype, 'currentTime', {
 
-    get: function () {
+    get: function ()
+    {
 
         return (this.video) ? this.video.currentTime : 0;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this.video.currentTime = value;
 
@@ -1206,9 +1266,10 @@ Object.defineProperty(Phaser.Video.prototype, "currentTime", {
 * @property {number} duration - The duration of the video in seconds.
 * @readOnly
 */
-Object.defineProperty(Phaser.Video.prototype, "duration", {
+Object.defineProperty(Phaser.Video.prototype, 'duration', {
 
-    get: function () {
+    get: function ()
+    {
 
         return (this.video) ? this.video.duration : 0;
 
@@ -1221,9 +1282,10 @@ Object.defineProperty(Phaser.Video.prototype, "duration", {
 * @property {number} progress - The progress of this video. This is a value between 0 and 1, where 0 is the start and 1 is the end of the video.
 * @readOnly
 */
-Object.defineProperty(Phaser.Video.prototype, "progress", {
+Object.defineProperty(Phaser.Video.prototype, 'progress', {
 
-    get: function () {
+    get: function ()
+    {
 
         return (this.video) ? (this.video.currentTime / this.video.duration) : 0;
 
@@ -1235,15 +1297,17 @@ Object.defineProperty(Phaser.Video.prototype, "progress", {
 * @name Phaser.Video#mute
 * @property {boolean} mute - Gets or sets the muted state of the Video.
 */
-Object.defineProperty(Phaser.Video.prototype, "mute", {
+Object.defineProperty(Phaser.Video.prototype, 'mute', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this._muted;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         value = value || null;
 
@@ -1278,15 +1342,17 @@ Object.defineProperty(Phaser.Video.prototype, "mute", {
 * @name Phaser.Video#paused
 * @property {boolean} paused
 */
-Object.defineProperty(Phaser.Video.prototype, "paused", {
+Object.defineProperty(Phaser.Video.prototype, 'paused', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this._paused;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         value = value || null;
 
@@ -1323,15 +1389,17 @@ Object.defineProperty(Phaser.Video.prototype, "paused", {
 * @name Phaser.Video#volume
 * @property {number} volume - Gets or sets the volume of the Video, a value between 0 and 1. The value given is clamped to the range 0 to 1.
 */
-Object.defineProperty(Phaser.Video.prototype, "volume", {
+Object.defineProperty(Phaser.Video.prototype, 'volume', {
 
-    get: function () {
+    get: function ()
+    {
 
         return (this.video) ? this.video.volume : 1;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         if (value < 0)
         {
@@ -1355,15 +1423,17 @@ Object.defineProperty(Phaser.Video.prototype, "volume", {
 * @name Phaser.Video#playbackRate
 * @property {number} playbackRate - Gets or sets the playback rate of the Video. This is the speed at which the video is playing.
 */
-Object.defineProperty(Phaser.Video.prototype, "playbackRate", {
+Object.defineProperty(Phaser.Video.prototype, 'playbackRate', {
 
-    get: function () {
+    get: function ()
+    {
 
         return (this.video) ? this.video.playbackRate : 1;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         if (this.video)
         {
@@ -1382,15 +1452,17 @@ Object.defineProperty(Phaser.Video.prototype, "playbackRate", {
 * @name Phaser.Video#loop
 * @property {boolean} loop
 */
-Object.defineProperty(Phaser.Video.prototype, "loop", {
+Object.defineProperty(Phaser.Video.prototype, 'loop', {
 
-    get: function () {
+    get: function ()
+    {
 
         return (this.video) ? this.video.loop : false;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         if (value && this.video)
         {
@@ -1410,9 +1482,10 @@ Object.defineProperty(Phaser.Video.prototype, "loop", {
 * @property {boolean} playing - True if the video is currently playing (and not paused or ended), otherwise false.
 * @readOnly
 */
-Object.defineProperty(Phaser.Video.prototype, "playing", {
+Object.defineProperty(Phaser.Video.prototype, 'playing', {
 
-    get: function () {
+    get: function ()
+    {
 
         return (this.video) ? !(this.video.paused && this.video.ended) : false;
 

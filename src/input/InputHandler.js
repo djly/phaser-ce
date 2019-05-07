@@ -11,7 +11,8 @@
 * @constructor
 * @param {Phaser.Sprite} sprite - The Sprite object to which this Input Handler belongs.
 */
-Phaser.InputHandler = function (sprite) {
+Phaser.InputHandler = function (sprite)
+{
 
     /**
     * @property {Phaser.Sprite} sprite - The Sprite object to which this Input Handler belongs.
@@ -283,13 +284,14 @@ Phaser.InputHandler.prototype = {
 
     /**
     * Starts the Input Handler running. This is called automatically when you enable input on a Sprite, or can be called directly if you need to set a specific priority.
-    * 
+    *
     * @method Phaser.InputHandler#start
     * @param {number} [priority=0] - Higher priority sprites take click priority over low-priority sprites when they are stacked on-top of each other.
     * @param {boolean} [useHandCursor=false] - If true the Sprite will show the hand cursor on mouse-over (doesn't apply to mobile browsers)
     * @return {Phaser.Sprite} The Sprite object to which the Input Handler is bound.
     */
-    start: function (priority, useHandCursor) {
+    start: function (priority, useHandCursor)
+    {
 
         priority = priority || 0;
         if (useHandCursor === undefined) { useHandCursor = false; }
@@ -340,7 +342,8 @@ Phaser.InputHandler.prototype = {
     * @method Phaser.InputHandler#addedToGroup
     * @private
     */
-    addedToGroup: function () {
+    addedToGroup: function ()
+    {
 
         if (this._dragPhase)
         {
@@ -360,7 +363,8 @@ Phaser.InputHandler.prototype = {
     * @method Phaser.InputHandler#removedFromGroup
     * @private
     */
-    removedFromGroup: function () {
+    removedFromGroup: function ()
+    {
 
         if (this._dragPhase)
         {
@@ -383,7 +387,8 @@ Phaser.InputHandler.prototype = {
     * Resets the Input Handler and disables it.
     * @method Phaser.InputHandler#reset
     */
-    reset: function () {
+    reset: function ()
+    {
 
         this.enabled = false;
 
@@ -411,7 +416,8 @@ Phaser.InputHandler.prototype = {
     * Stops the Input Handler from running.
     * @method Phaser.InputHandler#stop
     */
-    stop: function () {
+    stop: function ()
+    {
 
         //  Turning off
         if (this.enabled === false)
@@ -431,13 +437,14 @@ Phaser.InputHandler.prototype = {
     * Clean up memory.
     * @method Phaser.InputHandler#destroy
     */
-    destroy: function () {
+    destroy: function ()
+    {
 
         if (this.sprite)
         {
             if (this._setHandCursor)
             {
-                this.game.canvas.style.cursor = "";
+                this.game.canvas.style.cursor = '';
                 this._setHandCursor = false;
             }
 
@@ -464,7 +471,8 @@ Phaser.InputHandler.prototype = {
     * @param {boolean} [includePixelPerfect=true] - If this object has `pixelPerfectClick` or `pixelPerfectOver` set should it be considered as valid?
     * @return {boolean} True if the object this InputHandler is bound to should be considered as valid for input detection.
     */
-    validForInput: function (highestID, highestRenderID, includePixelPerfect) {
+    validForInput: function (highestID, highestRenderID, includePixelPerfect)
+    {
 
         if (includePixelPerfect === undefined) { includePixelPerfect = true; }
 
@@ -498,7 +506,8 @@ Phaser.InputHandler.prototype = {
     * @method Phaser.InputHandler#isPixelPerfect
     * @return {boolean} True if the this InputHandler has either `pixelPerfectClick` or `pixelPerfectOver` set to `true`.
     */
-    isPixelPerfect: function () {
+    isPixelPerfect: function ()
+    {
 
         return (this.pixelPerfectClick || this.pixelPerfectOver);
 
@@ -512,7 +521,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {number} The x coordinate of the Input pointer.
     */
-    pointerX: function (pointerId) {
+    pointerX: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -528,7 +538,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {number} The y coordinate of the Input pointer.
     */
-    pointerY: function (pointerId) {
+    pointerY: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -544,7 +555,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {boolean} - True if the given pointer is down, otherwise false.
     */
-    pointerDown: function (pointerId) {
+    pointerDown: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -560,7 +572,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {boolean} - True if the given pointer is up, otherwise false.
     */
-    pointerUp: function (pointerId) {
+    pointerUp: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -575,7 +588,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=(check all)]
     * @return {number}
     */
-    pointerTimeDown: function (pointerId) {
+    pointerTimeDown: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -590,7 +604,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {number}
     */
-    pointerTimeUp: function (pointerId) {
+    pointerTimeUp: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -605,7 +620,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=(check all)] The ID number of a Pointer to check. If you don't provide a number it will check all Pointers.
     * @return {boolean} - True if the given pointer (if a index was given, or any pointer if not) is over this object.
     */
-    pointerOver: function (pointerId) {
+    pointerOver: function (pointerId)
+    {
 
         if (!this.enabled)
         {
@@ -638,7 +654,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=(check all)] The ID number of a Pointer to check. If you don't provide a number it will check all Pointers.
     * @return {boolean} True if the given pointer (if a index was given, or any pointer if not) is out of this object.
     */
-    pointerOut: function (pointerId) {
+    pointerOut: function (pointerId)
+    {
 
         if (!this.enabled)
         {
@@ -669,7 +686,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {number}
     */
-    pointerTimeOver: function (pointerId) {
+    pointerTimeOver: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -684,7 +702,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {number}
     */
-    pointerTimeOut: function (pointerId) {
+    pointerTimeOut: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -699,7 +718,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {boolean} True if the pointer is dragging an object, otherwise false.
     */
-    pointerDragged: function (pointerId) {
+    pointerDragged: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -716,7 +736,8 @@ Phaser.InputHandler.prototype = {
     * @param {boolean} [fastTest=false] - Force a simple hit area check even if `pixelPerfectOver` is true for this object?
     * @return {boolean} True if the pointer is down, otherwise false.
     */
-    checkPointerDown: function (pointer, fastTest) {
+    checkPointerDown: function (pointer, fastTest)
+    {
 
         if (!pointer.isDown ||
             !this.enabled ||
@@ -761,7 +782,8 @@ Phaser.InputHandler.prototype = {
     * @param {boolean} [fastTest=false] - Force a simple hit area check even if `pixelPerfectOver` is true for this object?
     * @return {boolean}
     */
-    checkPointerOver: function (pointer, fastTest) {
+    checkPointerOver: function (pointer, fastTest)
+    {
 
         if (!this.enabled ||
             !this.sprite ||
@@ -806,7 +828,8 @@ Phaser.InputHandler.prototype = {
     * @param {Phaser.Pointer} [pointer] - The pointer to get the x/y coordinate from if not passed as the first two parameters.
     * @return {boolean} true if there is the alpha of the pixel is >= InputHandler.pixelPerfectAlpha
     */
-    checkPixel: function (x, y, pointer) {
+    checkPixel: function (x, y, pointer)
+    {
 
         //  Grab a pixel from our image into the hitCanvas and then test it
         if (this.sprite.texture.baseTexture.source)
@@ -868,13 +891,14 @@ Phaser.InputHandler.prototype = {
     /**
     * Internal Update method. This is called automatically and handles the Pointer
     * and drag update loops.
-    * 
+    *
     * @method Phaser.InputHandler#update
     * @protected
     * @param {Phaser.Pointer} pointer
     * @return {boolean} True if the pointer is still active, otherwise false.
     */
-    update: function (pointer) {
+    update: function (pointer)
+    {
 
         if (this.sprite === null || this.sprite.parent === undefined)
         {
@@ -924,13 +948,14 @@ Phaser.InputHandler.prototype = {
 
     /**
     * Internal method handling the pointer over event.
-    * 
+    *
     * @method Phaser.InputHandler#_pointerOverHandler
     * @private
     * @param {Phaser.Pointer} pointer - The pointer that triggered the event
     * @param {boolean} [silent=false] - If silent is `true` then this method will not dispatch any Signals from the parent Sprite.
     */
-    _pointerOverHandler: function (pointer, silent) {
+    _pointerOverHandler: function (pointer, silent)
+    {
 
         if (this.sprite === null)
         {
@@ -952,7 +977,7 @@ Phaser.InputHandler.prototype = {
 
             if (this.useHandCursor && data.isDragged === false)
             {
-                this.game.canvas.style.cursor = "pointer";
+                this.game.canvas.style.cursor = 'pointer';
                 this._setHandCursor = true;
             }
 
@@ -961,7 +986,7 @@ Phaser.InputHandler.prototype = {
                 this.sprite.events.onInputOver$dispatch(this.sprite, pointer);
             }
 
-            if (this.sprite.parent && this.sprite.parent.type === Phaser.GROUP)
+            if (this.sprite.parent && this.sprite.parent.onChildInputOver)
             {
                 this.sprite.parent.onChildInputOver.dispatch(this.sprite, pointer);
             }
@@ -971,13 +996,14 @@ Phaser.InputHandler.prototype = {
 
     /**
     * Internal method handling the pointer out event.
-    * 
+    *
     * @method Phaser.InputHandler#_pointerOutHandler
     * @private
     * @param {Phaser.Pointer} pointer - The pointer that triggered the event.
     * @param {boolean} [silent=false] - If silent is `true` then this method will not dispatch any Signals from the parent Sprite.
     */
-    _pointerOutHandler: function (pointer, silent) {
+    _pointerOutHandler: function (pointer, silent)
+    {
 
         if (this.sprite === null)
         {
@@ -993,7 +1019,7 @@ Phaser.InputHandler.prototype = {
 
         if (this.useHandCursor && data.isDragged === false)
         {
-            this.game.canvas.style.cursor = "";
+            this.game.canvas.style.cursor = '';
             this._setHandCursor = false;
         }
 
@@ -1001,7 +1027,7 @@ Phaser.InputHandler.prototype = {
         {
             this.sprite.events.onInputOut$dispatch(this.sprite, pointer);
 
-            if (this.sprite && this.sprite.parent && this.sprite.parent.type === Phaser.GROUP)
+            if (this.sprite && this.sprite.parent && this.sprite.parent.onChildInputOut)
             {
                 this.sprite.parent.onChildInputOut.dispatch(this.sprite, pointer);
             }
@@ -1011,12 +1037,13 @@ Phaser.InputHandler.prototype = {
 
     /**
     * Internal method handling the touched / clicked event.
-    * 
+    *
     * @method Phaser.InputHandler#_touchedHandler
     * @private
     * @param {Phaser.Pointer} pointer - The pointer that triggered the event.
     */
-    _touchedHandler: function (pointer) {
+    _touchedHandler: function (pointer)
+    {
 
         if (this.sprite === null)
         {
@@ -1047,7 +1074,7 @@ Phaser.InputHandler.prototype = {
                 this.sprite.events.onInputDown$dispatch(this.sprite, pointer);
 
                 //  The event above might have destroyed this sprite.
-                if (this.sprite && this.sprite.parent && this.sprite.parent.type === Phaser.GROUP)
+                if (this.sprite && this.sprite.parent && this.sprite.parent.onChildInputDown)
                 {
                     this.sprite.parent.onChildInputDown.dispatch(this.sprite, pointer);
                 }
@@ -1094,12 +1121,13 @@ Phaser.InputHandler.prototype = {
 
     /**
     * Internal method handling the drag threshold timer.
-    * 
+    *
     * @method Phaser.InputHandler#dragTimeElapsed
     * @private
     * @param {Phaser.Pointer} pointer
     */
-    dragTimeElapsed: function (pointer) {
+    dragTimeElapsed: function (pointer)
+    {
 
         this._dragTimePass = true;
 
@@ -1119,7 +1147,8 @@ Phaser.InputHandler.prototype = {
     * @private
     * @param {Phaser.Pointer} pointer
     */
-    _releasedHandler: function (pointer) {
+    _releasedHandler: function (pointer)
+    {
 
         if (this.sprite === null)
         {
@@ -1148,7 +1177,7 @@ Phaser.InputHandler.prototype = {
                     this.sprite.events.onInputUp$dispatch(this.sprite, pointer, isOver);
                 }
 
-                if (this.sprite && this.sprite.parent && this.sprite.parent.type === Phaser.GROUP)
+                if (this.sprite && this.sprite.parent && this.sprite.parent.onChildInputUp)
                 {
                     this.sprite.parent.onChildInputUp.dispatch(this.sprite, pointer, isOver);
                 }
@@ -1159,12 +1188,12 @@ Phaser.InputHandler.prototype = {
                     isOver = this.checkPointerOver(pointer);
                 }
             }
-            
+
             data.isOver = isOver;
 
             if (!isOver && this.useHandCursor)
             {
-                this.game.canvas.style.cursor = "default";
+                this.game.canvas.style.cursor = 'default';
                 this._setHandCursor = false;
             }
 
@@ -1184,14 +1213,22 @@ Phaser.InputHandler.prototype = {
 
     /**
     * Called as a Pointer actively drags this Game Object.
-    * 
+    *
     * @method Phaser.InputHandler#updateDrag
     * @private
     * @param {Phaser.Pointer} pointer - The Pointer causing the drag update.
     * @param {boolean} fromStart - True if this is the first update, immediately after the drag has started.
     * @return {boolean}
     */
-    updateDrag: function (pointer, fromStart) {
+    updateDrag: function (pointer, fromStart)
+    {
+
+        var camera = this.game.camera;
+        var dragOffset = this.dragOffset;
+        var dragPoint = this._dragPoint;
+        var pointerData = this._pointerData[pointer.id];
+        var snapPoint = this.snapPoint;
+        var sprite = this.sprite;
 
         if (fromStart === undefined) { fromStart = false; }
 
@@ -1201,52 +1238,33 @@ Phaser.InputHandler.prototype = {
             return false;
         }
 
-		var pointerLocalCoord = this.globalToLocal(pointer);
-        var px = pointerLocalCoord.x + this._dragPoint.x + this.dragOffset.x;
-        var py = pointerLocalCoord.y + this._dragPoint.y + this.dragOffset.y;
+        var pointerLocalCoord = this.globalToLocal(pointer);
 
-        if (this.sprite.fixedToCamera)
+        if (sprite.fixedToCamera)
         {
-            if (this.allowHorizontalDrag)
-            {
-                this.sprite.cameraOffset.x = px;
-            }
-
-            if (this.allowVerticalDrag)
-            {
-                this.sprite.cameraOffset.y = py;
-            }
-
-            if (this.boundsRect)
-            {
-                this.checkBoundsRect();
-            }
-
-            if (this.boundsSprite)
-            {
-                this.checkBoundsSprite();
-            }
-
-            if (this.snapOnDrag)
-            {
-                this.sprite.cameraOffset.x = Math.round((this.sprite.cameraOffset.x - (this.snapOffsetX % this.snapX)) / this.snapX) * this.snapX + (this.snapOffsetX % this.snapX);
-                this.sprite.cameraOffset.y = Math.round((this.sprite.cameraOffset.y - (this.snapOffsetY % this.snapY)) / this.snapY) * this.snapY + (this.snapOffsetY % this.snapY);
-                this.snapPoint.set(this.sprite.cameraOffset.x, this.sprite.cameraOffset.y);
-            }
+            var px = camera.scale.x * pointerLocalCoord.x + dragPoint.x + dragOffset.x;
+            var py = camera.scale.y * pointerLocalCoord.y + dragPoint.y + dragOffset.y;
         }
         else
         {
-            var cx = this.game.camera.x - this._pointerData[pointer.id].camX;
-            var cy = this.game.camera.y - this._pointerData[pointer.id].camY;
+            var px = pointerLocalCoord.x + dragPoint.x + dragOffset.x;
+            var py = pointerLocalCoord.y + dragPoint.y + dragOffset.y;
+        }
+
+        if (sprite.fixedToCamera)
+        {
+            var cameraOffset = sprite.cameraOffset;
+            var prevX = cameraOffset.x;
+            var prevY = cameraOffset.y;
 
             if (this.allowHorizontalDrag)
             {
-                this.sprite.x = px + cx;
+                cameraOffset.x = px - camera.x;
             }
 
             if (this.allowVerticalDrag)
             {
-                this.sprite.y = py + cy;
+                cameraOffset.y = py - camera.y;
             }
 
             if (this.boundsRect)
@@ -1261,13 +1279,53 @@ Phaser.InputHandler.prototype = {
 
             if (this.snapOnDrag)
             {
-                this.sprite.x = Math.round((this.sprite.x - (this.snapOffsetX % this.snapX)) / this.snapX) * this.snapX + (this.snapOffsetX % this.snapX);
-                this.sprite.y = Math.round((this.sprite.y - (this.snapOffsetY % this.snapY)) / this.snapY) * this.snapY + (this.snapOffsetY % this.snapY);
-                this.snapPoint.set(this.sprite.x, this.sprite.y);
+                cameraOffset.x = Math.round((cameraOffset.x - (this.snapOffsetX % this.snapX)) / this.snapX) * this.snapX + (this.snapOffsetX % this.snapX);
+                cameraOffset.y = Math.round((cameraOffset.y - (this.snapOffsetY % this.snapY)) / this.snapY) * this.snapY + (this.snapOffsetY % this.snapY);
+                snapPoint.set(cameraOffset.x, cameraOffset.y);
             }
+
+            var dx = cameraOffset.x - prevX;
+            var dy = cameraOffset.y - prevY;
+        }
+        else
+        {
+            var cx = camera.x - pointerData.camX;
+            var cy = camera.y - pointerData.camY;
+            var prevX = sprite.x;
+            var prevY = sprite.y;
+
+            if (this.allowHorizontalDrag)
+            {
+                sprite.x = px + cx;
+            }
+
+            if (this.allowVerticalDrag)
+            {
+                sprite.y = py + cy;
+            }
+
+            if (this.boundsRect)
+            {
+                this.checkBoundsRect();
+            }
+
+            if (this.boundsSprite)
+            {
+                this.checkBoundsSprite();
+            }
+
+            if (this.snapOnDrag)
+            {
+                sprite.x = Math.round((sprite.x - (this.snapOffsetX % this.snapX)) / this.snapX) * this.snapX + (this.snapOffsetX % this.snapX);
+                sprite.y = Math.round((sprite.y - (this.snapOffsetY % this.snapY)) / this.snapY) * this.snapY + (this.snapOffsetY % this.snapY);
+                snapPoint.set(sprite.x, sprite.y);
+            }
+
+            var dx = sprite.x - prevX;
+            var dy = sprite.y - prevY;
         }
 
-        this.sprite.events.onDragUpdate.dispatch(this.sprite, pointer, px, py, this.snapPoint, fromStart);
+        this.sprite.events.onDragUpdate.dispatch(sprite, pointer, px, py, snapPoint, fromStart, dx, dy);
 
         return true;
 
@@ -1281,7 +1339,8 @@ Phaser.InputHandler.prototype = {
     * @param {number} delay - The time below which the pointer is considered as just over.
     * @return {boolean}
     */
-    justOver: function (pointerId, delay) {
+    justOver: function (pointerId, delay)
+    {
 
         pointerId = pointerId || 0;
         delay = delay || 500;
@@ -1298,7 +1357,8 @@ Phaser.InputHandler.prototype = {
     * @param {number} delay - The time below which the pointer is considered as just out.
     * @return {boolean}
     */
-    justOut: function (pointerId, delay) {
+    justOut: function (pointerId, delay)
+    {
 
         pointerId = pointerId || 0;
         delay = delay || 500;
@@ -1315,7 +1375,8 @@ Phaser.InputHandler.prototype = {
     * @param {number} delay - The time below which the pointer is considered as just over.
     * @return {boolean}
     */
-    justPressed: function (pointerId, delay) {
+    justPressed: function (pointerId, delay)
+    {
 
         pointerId = pointerId || 0;
         delay = delay || 500;
@@ -1332,7 +1393,8 @@ Phaser.InputHandler.prototype = {
     * @param {number} delay - The time below which the pointer is considered as just out.
     * @return {boolean}
     */
-    justReleased: function (pointerId, delay) {
+    justReleased: function (pointerId, delay)
+    {
 
         pointerId = pointerId || 0;
         delay = delay || 500;
@@ -1348,7 +1410,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {number} The number of milliseconds the pointer has been over the Sprite, or -1 if not over.
     */
-    overDuration: function (pointerId) {
+    overDuration: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -1368,7 +1431,8 @@ Phaser.InputHandler.prototype = {
     * @param {integer} [pointerId=0]
     * @return {number} The number of milliseconds the pointer has been pressed down on the Sprite, or -1 if not over.
     */
-    downDuration: function (pointerId) {
+    downDuration: function (pointerId)
+    {
 
         pointerId = pointerId || 0;
 
@@ -1385,11 +1449,11 @@ Phaser.InputHandler.prototype = {
     * Allow this Sprite to be dragged by any valid pointer.
     *
     * When the drag begins the Sprite.events.onDragStart event will be dispatched.
-    * 
+    *
     * When the drag completes by way of the user letting go of the pointer that was dragging the sprite, the Sprite.events.onDragStop event is dispatched.
     *
     * You can control the thresholds over when a drag starts via the properties:
-    * 
+    *
     * `Pointer.dragDistanceThreshold` the distance, in pixels, that the pointer has to move
     * before the drag will start.
     *
@@ -1399,17 +1463,18 @@ Phaser.InputHandler.prototype = {
     * You can set either (or both) of these properties after enabling a Sprite for drag.
     *
     * For the duration of the drag the Sprite.events.onDragUpdate event is dispatched. This event is only dispatched when the pointer actually
-    * changes position and moves. The event sends 5 parameters: `sprite`, `pointer`, `dragX`, `dragY` and `snapPoint`.
-    * 
+    * changes position and moves. The event sends 8 parameters: `sprite`, `pointer`, `dragX`, `dragY`, `snapPoint`, `fromStart`, `deltaX`, and `deltaY`.
+    *
     * @method Phaser.InputHandler#enableDrag
     * @param {boolean} [lockCenter=false] - If false the Sprite will drag from where you click it minus the dragOffset. If true it will center itself to the tip of the mouse pointer.
     * @param {boolean} [bringToTop=false] - If true the Sprite will be bought to the top of the rendering list in its current Group.
     * @param {boolean} [pixelPerfect=false] - If true it will use a pixel perfect test to see if you clicked the Sprite. False uses the bounding box.
-    * @param {boolean} [alphaThreshold=255] - If using pixel perfect collision this specifies the alpha level from 0 to 255 above which a collision is processed.
+    * @param {integer} [alphaThreshold=255] - If using pixel perfect collision this specifies the alpha level from 0 to 255 above which a collision is processed.
     * @param {Phaser.Rectangle} [boundsRect=null] - If you want to restrict the drag of this sprite to a specific Rectangle, pass the Phaser.Rectangle here, otherwise it's free to drag anywhere.
     * @param {Phaser.Sprite} [boundsSprite=null] - If you want to restrict the drag of this sprite to within the bounding box of another sprite, pass it here.
     */
-    enableDrag: function (lockCenter, bringToTop, pixelPerfect, alphaThreshold, boundsRect, boundsSprite) {
+    enableDrag: function (lockCenter, bringToTop, pixelPerfect, alphaThreshold, boundsRect, boundsSprite)
+    {
 
         if (lockCenter === undefined) { lockCenter = false; }
         if (bringToTop === undefined) { bringToTop = false; }
@@ -1445,7 +1510,8 @@ Phaser.InputHandler.prototype = {
     *
     * @method Phaser.InputHandler#disableDrag
     */
-    disableDrag: function () {
+    disableDrag: function ()
+    {
 
         if (this._pointerData)
         {
@@ -1468,11 +1534,12 @@ Phaser.InputHandler.prototype = {
     * @method Phaser.InputHandler#startDrag
     * @param {Phaser.Pointer} pointer
     */
-    startDrag: function (pointer) {
+    startDrag: function (pointer)
+    {
 
         var x = this.sprite.x;
         var y = this.sprite.y;
-		var pointerLocalCoord = this.globalToLocal(pointer);
+        var pointerLocalCoord = this.globalToLocal(pointer);
 
         this.isDragged = true;
         this._draggedPointerID = pointer.id;
@@ -1487,7 +1554,7 @@ Phaser.InputHandler.prototype = {
             if (this.dragFromCenter)
             {
                 var bounds = this.sprite.getBounds();
-				var boundsCenterLocalCoord = this.globalToLocal(new Phaser.Point(bounds.centerX, bounds.centerY));
+                var boundsCenterLocalCoord = this.globalToLocal(new Phaser.Point(bounds.centerX, bounds.centerY));
 
                 this.sprite.cameraOffset.x = pointerLocalCoord.x + (this.sprite.cameraOffset.x - boundsCenterLocalCoord.x);
                 this.sprite.cameraOffset.y = pointerLocalCoord.y + (this.sprite.cameraOffset.y - boundsCenterLocalCoord.y);
@@ -1500,7 +1567,7 @@ Phaser.InputHandler.prototype = {
             if (this.dragFromCenter)
             {
                 var bounds = this.sprite.getBounds();
-				var boundsCenterLocalCoord = this.globalToLocal(new Phaser.Point(bounds.centerX, bounds.centerY));
+                var boundsCenterLocalCoord = this.globalToLocal(new Phaser.Point(bounds.centerX, bounds.centerY));
 
                 this.sprite.x = pointerLocalCoord.x + (this.sprite.x - boundsCenterLocalCoord.x);
                 this.sprite.y = pointerLocalCoord.y + (this.sprite.y - boundsCenterLocalCoord.y);
@@ -1531,7 +1598,8 @@ Phaser.InputHandler.prototype = {
     * @method Phaser.InputHandler#globalToLocalX
     * @param {number} x
     */
-    globalToLocalX: function (x) {
+    globalToLocalX: function (x)
+    {
 
         if (this.scaleLayer)
         {
@@ -1549,7 +1617,8 @@ Phaser.InputHandler.prototype = {
     * @method Phaser.InputHandler#globalToLocalY
     * @param {number} y
     */
-    globalToLocalY: function (y) {
+    globalToLocalY: function (y)
+    {
 
         if (this.scaleLayer)
         {
@@ -1560,7 +1629,7 @@ Phaser.InputHandler.prototype = {
         return y;
 
     },
-	
+
     /**
     * Convert global coordinates to local sprite coordinates
     *
@@ -1568,18 +1637,19 @@ Phaser.InputHandler.prototype = {
     * @param {Phaser.Point} globalCoord - The global coordinates to convert.
     * @return {Phaser.Point} A point containing the local coordinates.
     */
-    globalToLocal: function (globalCoord) {
+    globalToLocal: function (globalCoord)
+    {
 
-		if (this.sprite.parent)
-		{
-			return this.game.input.getLocalPosition(this.sprite.parent, {x: globalCoord.x, y: globalCoord.y});
-		}
-		else
-		{
-			return globalCoord;
-		}
+        if (this.sprite.parent)
+        {
+            return this.game.input.getLocalPosition(this.sprite.parent, {x: globalCoord.x, y: globalCoord.y});
+        }
+        else
+        {
+            return globalCoord;
+        }
 
-    },	
+    },
 
     /**
     * Called by Pointer when drag is stopped on this Sprite. Should not usually be called directly.
@@ -1587,7 +1657,8 @@ Phaser.InputHandler.prototype = {
     * @method Phaser.InputHandler#stopDrag
     * @param {Phaser.Pointer} pointer
     */
-    stopDrag: function (pointer) {
+    stopDrag: function (pointer)
+    {
 
         this.isDragged = false;
         this._draggedPointerID = -1;
@@ -1625,7 +1696,8 @@ Phaser.InputHandler.prototype = {
     * @param {boolean} [allowHorizontal=true] - To enable the sprite to be dragged horizontally set to true, otherwise false.
     * @param {boolean} [allowVertical=true] - To enable the sprite to be dragged vertically set to true, otherwise false.
     */
-    setDragLock: function (allowHorizontal, allowVertical) {
+    setDragLock: function (allowHorizontal, allowVertical)
+    {
 
         if (allowHorizontal === undefined) { allowHorizontal = true; }
         if (allowVertical === undefined) { allowVertical = true; }
@@ -1647,7 +1719,8 @@ Phaser.InputHandler.prototype = {
     * @param {number} [snapOffsetX=0] - Used to offset the top-left starting point of the snap grid.
     * @param {number} [snapOffsetY=0] - Used to offset the top-left starting point of the snap grid.
     */
-    enableSnap: function (snapX, snapY, onDrag, onRelease, snapOffsetX, snapOffsetY) {
+    enableSnap: function (snapX, snapY, onDrag, onRelease, snapOffsetX, snapOffsetY)
+    {
 
         if (onDrag === undefined) { onDrag = true; }
         if (onRelease === undefined) { onRelease = false; }
@@ -1668,7 +1741,8 @@ Phaser.InputHandler.prototype = {
     *
     * @method Phaser.InputHandler#disableSnap
     */
-    disableSnap: function () {
+    disableSnap: function ()
+    {
 
         this.snapOnDrag = false;
         this.snapOnRelease = false;
@@ -1680,7 +1754,8 @@ Phaser.InputHandler.prototype = {
     *
     * @method Phaser.InputHandler#checkBoundsRect
     */
-    checkBoundsRect: function () {
+    checkBoundsRect: function ()
+    {
 
         if (this.sprite.fixedToCamera)
         {
@@ -1730,7 +1805,8 @@ Phaser.InputHandler.prototype = {
     *
     * @method Phaser.InputHandler#checkBoundsSprite
     */
-    checkBoundsSprite: function () {
+    checkBoundsSprite: function ()
+    {
 
         if (this.sprite.fixedToCamera && this.boundsSprite.fixedToCamera)
         {

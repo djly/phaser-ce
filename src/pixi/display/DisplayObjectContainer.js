@@ -6,11 +6,12 @@
  * A DisplayObjectContainer represents a collection of display objects.
  * It is the base class of all display objects that act as a container for other objects.
  *
- * @class DisplayObjectContainer
- * @extends DisplayObject
+ * @class PIXI.DisplayObjectContainer
+ * @extends PIXI.DisplayObject
  * @constructor
  */
-PIXI.DisplayObjectContainer = function () {
+PIXI.DisplayObjectContainer = function ()
+{
 
     PIXI.DisplayObject.call(this);
 
@@ -25,28 +26,29 @@ PIXI.DisplayObjectContainer = function () {
 
     /**
     * If `ignoreChildInput`  is `false` it will allow this objects _children_ to be considered as valid for Input events.
-    * 
+    *
     * If this property is `true` then the children will _not_ be considered as valid for Input events.
-    * 
+    *
     * Note that this property isn't recursive: only immediate children are influenced, it doesn't scan further down.
     * @property {boolean} ignoreChildInput
     * @default
     */
     this.ignoreChildInput = false;
-    
+
 };
 
-PIXI.DisplayObjectContainer.prototype = Object.create( PIXI.DisplayObject.prototype );
+PIXI.DisplayObjectContainer.prototype = Object.create(PIXI.DisplayObject.prototype);
 PIXI.DisplayObjectContainer.prototype.constructor = PIXI.DisplayObjectContainer;
 
 /**
  * Adds a child to the container.
  *
- * @method addChild
+ * @method PIXI.DisplayObjectContainer#addChild
  * @param child {DisplayObject} The DisplayObject to add to the container
  * @return {DisplayObject} The child that was added.
  */
-PIXI.DisplayObjectContainer.prototype.addChild = function (child) {
+PIXI.DisplayObjectContainer.prototype.addChild = function (child)
+{
 
     return this.addChildAt(child, this.children.length);
 
@@ -55,12 +57,13 @@ PIXI.DisplayObjectContainer.prototype.addChild = function (child) {
 /**
  * Adds a child to the container at a specified index. If the index is out of bounds an error will be thrown
  *
- * @method addChildAt
+ * @method PIXI.DisplayObjectContainer#addChildAt
  * @param child {DisplayObject} The child to add
  * @param index {Number} The index to place the child in
  * @return {DisplayObject} The child that was added.
  */
-PIXI.DisplayObjectContainer.prototype.addChildAt = function (child, index) {
+PIXI.DisplayObjectContainer.prototype.addChildAt = function (child, index)
+{
 
     if (index >= 0 && index <= this.children.length)
     {
@@ -77,7 +80,7 @@ PIXI.DisplayObjectContainer.prototype.addChildAt = function (child, index) {
     }
     else
     {
-        throw new Error(child + 'addChildAt: The index '+ index +' supplied is out of bounds ' + this.children.length);
+        throw new Error(child + 'addChildAt: The index ' + index + ' supplied is out of bounds ' + this.children.length);
     }
 
 };
@@ -85,11 +88,12 @@ PIXI.DisplayObjectContainer.prototype.addChildAt = function (child, index) {
 /**
  * Swaps the position of 2 Display Objects within this container.
  *
- * @method swapChildren
+ * @method PIXI.DisplayObjectContainer#swapChildren
  * @param child {DisplayObject}
  * @param child2 {DisplayObject}
  */
-PIXI.DisplayObjectContainer.prototype.swapChildren = function (child, child2) {
+PIXI.DisplayObjectContainer.prototype.swapChildren = function (child, child2)
+{
 
     if (child === child2)
     {
@@ -112,11 +116,12 @@ PIXI.DisplayObjectContainer.prototype.swapChildren = function (child, child2) {
 /**
  * Returns the index position of a child DisplayObject instance
  *
- * @method getChildIndex
+ * @method PIXI.DisplayObjectContainer#getChildIndex
  * @param child {DisplayObject} The DisplayObject instance to identify
  * @return {Number} The index position of the child display object to identify
  */
-PIXI.DisplayObjectContainer.prototype.getChildIndex = function (child) {
+PIXI.DisplayObjectContainer.prototype.getChildIndex = function (child)
+{
 
     var index = this.children.indexOf(child);
 
@@ -132,11 +137,12 @@ PIXI.DisplayObjectContainer.prototype.getChildIndex = function (child) {
 /**
  * Changes the position of an existing child in the display object container
  *
- * @method setChildIndex
+ * @method PIXI.DisplayObjectContainer#setChildIndex
  * @param child {DisplayObject} The child DisplayObject instance for which you want to change the index number
  * @param index {Number} The resulting index number for the child display object
  */
-PIXI.DisplayObjectContainer.prototype.setChildIndex = function (child, index) {
+PIXI.DisplayObjectContainer.prototype.setChildIndex = function (child, index)
+{
 
     if (index < 0 || index >= this.children.length)
     {
@@ -145,37 +151,39 @@ PIXI.DisplayObjectContainer.prototype.setChildIndex = function (child, index) {
 
     var currentIndex = this.getChildIndex(child);
 
-    this.children.splice(currentIndex, 1); //remove from old position
-    this.children.splice(index, 0, child); //add at new position
+    this.children.splice(currentIndex, 1); // remove from old position
+    this.children.splice(index, 0, child); // add at new position
 
 };
 
 /**
  * Returns the child at the specified index
  *
- * @method getChildAt
+ * @method PIXI.DisplayObjectContainer#getChildAt
  * @param index {Number} The index to get the child from
  * @return {DisplayObject} The child at the given index, if any.
  */
-PIXI.DisplayObjectContainer.prototype.getChildAt = function (index) {
+PIXI.DisplayObjectContainer.prototype.getChildAt = function (index)
+{
 
     if (index < 0 || index >= this.children.length)
     {
-        throw new Error('getChildAt: Supplied index '+ index +' does not exist in the child list, or the supplied DisplayObject must be a child of the caller');
+        throw new Error('getChildAt: Supplied index ' + index + ' does not exist in the child list, or the supplied DisplayObject must be a child of the caller');
     }
 
     return this.children[index];
-    
+
 };
 
 /**
  * Removes a child from the container.
  *
- * @method removeChild
+ * @method PIXI.DisplayObjectContainer#removeChild
  * @param child {DisplayObject} The DisplayObject to remove
  * @return {DisplayObject} The child that was removed.
  */
-PIXI.DisplayObjectContainer.prototype.removeChild = function (child) {
+PIXI.DisplayObjectContainer.prototype.removeChild = function (child)
+{
 
     var index = this.children.indexOf(child);
 
@@ -183,7 +191,7 @@ PIXI.DisplayObjectContainer.prototype.removeChild = function (child) {
     {
         return;
     }
-    
+
     return this.removeChildAt(index);
 
 };
@@ -191,11 +199,12 @@ PIXI.DisplayObjectContainer.prototype.removeChild = function (child) {
 /**
  * Removes a child from the specified index position.
  *
- * @method removeChildAt
+ * @method PIXI.DisplayObjectContainer#removeChildAt
  * @param index {Number} The index to get the child from
  * @return {DisplayObject} The child that was removed.
  */
-PIXI.DisplayObjectContainer.prototype.removeChildAt = function (index) {
+PIXI.DisplayObjectContainer.prototype.removeChildAt = function (index)
+{
 
     var child = this.getChildAt(index);
 
@@ -210,14 +219,39 @@ PIXI.DisplayObjectContainer.prototype.removeChildAt = function (index) {
 
 };
 
+PIXI.DisplayObjectContainer.prototype.bringChildToTop = function (child)
+{
+
+    if (child.parent !== this)
+    {
+        return;
+    }
+
+    return this.setChildIndex(child, this.children.length - 1);
+
+};
+
+PIXI.DisplayObjectContainer.prototype.sendChildToBack = function (child)
+{
+
+    if (child.parent !== this)
+    {
+        return;
+    }
+
+    return this.setChildIndex(child, 0);
+
+};
+
 /**
 * Removes all children from this container that are within the begin and end indexes.
 *
-* @method removeChildren
+* @method PIXI.DisplayObjectContainer#removeChildren
 * @param beginIndex {Number} The beginning position. Default value is 0.
 * @param endIndex {Number} The ending position. Default value is size of the container.
 */
-PIXI.DisplayObjectContainer.prototype.removeChildren = function (beginIndex, endIndex) {
+PIXI.DisplayObjectContainer.prototype.removeChildren = function (beginIndex, endIndex)
+{
 
     if (beginIndex === undefined) { beginIndex = 0; }
     if (endIndex === undefined) { endIndex = this.children.length; }
@@ -242,7 +276,7 @@ PIXI.DisplayObjectContainer.prototype.removeChildren = function (beginIndex, end
     }
     else
     {
-        throw new Error( 'removeChildren: Range Error, numeric values are outside the acceptable range' );
+        throw new Error('removeChildren: Range Error, numeric values are outside the acceptable range');
     }
 
 };
@@ -250,10 +284,11 @@ PIXI.DisplayObjectContainer.prototype.removeChildren = function (beginIndex, end
 /*
  * Updates the transform on all children of this container for rendering
  *
- * @method updateTransform
+ * @method PIXI.DisplayObjectContainer#updateTransform
  * @private
  */
-PIXI.DisplayObjectContainer.prototype.updateTransform = function () {
+PIXI.DisplayObjectContainer.prototype.updateTransform = function ()
+{
 
     if (!this.visible)
     {
@@ -280,25 +315,26 @@ PIXI.DisplayObjectContainer.prototype.displayObjectContainerUpdateTransform = PI
 /**
  * Retrieves the global bounds of the displayObjectContainer as a rectangle. The bounds calculation takes all visible children into consideration.
  *
- * @method getBounds
- * @param {PIXI.DisplayObject|PIXI.Matrix} [targetCoordinateSpace] Returns a rectangle that defines the area of the display object relative to the coordinate system of the targetCoordinateSpace object.
+ * @method PIXI.DisplayObjectContainer#getBounds
+ * @param {PIXI.DisplayObject|Phaser.Matrix} [targetCoordinateSpace] Returns a rectangle that defines the area of the display object relative to the coordinate system of the targetCoordinateSpace object.
  * @return {Rectangle} The rectangular bounding area
  */
-PIXI.DisplayObjectContainer.prototype.getBounds = function (targetCoordinateSpace) {
+PIXI.DisplayObjectContainer.prototype.getBounds = function (targetCoordinateSpace)
+{
 
     var isTargetCoordinateSpaceDisplayObject = (targetCoordinateSpace && targetCoordinateSpace instanceof PIXI.DisplayObject);
     var isTargetCoordinateSpaceThisOrParent = true;
 
-    if (!isTargetCoordinateSpaceDisplayObject) 
-	{
+    if (!isTargetCoordinateSpaceDisplayObject)
+    {
         targetCoordinateSpace = this;
-    } 
-	else if (targetCoordinateSpace instanceof PIXI.DisplayObjectContainer) 
-	{
+    }
+    else if (targetCoordinateSpace instanceof PIXI.DisplayObjectContainer)
+    {
         isTargetCoordinateSpaceThisOrParent = targetCoordinateSpace.contains(this);
-    } 
-	else 
-	{
+    }
+    else
+    {
         isTargetCoordinateSpaceThisOrParent = false;
     }
 
@@ -308,10 +344,10 @@ PIXI.DisplayObjectContainer.prototype.getBounds = function (targetCoordinateSpac
     {
         var matrixCache = targetCoordinateSpace.worldTransform;
 
-        targetCoordinateSpace.worldTransform = PIXI.identityMatrix;
+        targetCoordinateSpace.worldTransform = Phaser.identityMatrix;
 
-        for (i = 0; i < targetCoordinateSpace.children.length; i++) 
-		{
+        for (i = 0; i < targetCoordinateSpace.children.length; i++)
+        {
             targetCoordinateSpace.children[i].updateTransform();
         }
     }
@@ -353,8 +389,8 @@ PIXI.DisplayObjectContainer.prototype.getBounds = function (targetCoordinateSpac
 
     var bounds = this._bounds;
 
-    if (!childVisible) 
-	{
+    if (!childVisible)
+    {
         bounds = new PIXI.Rectangle();
 
         var w0 = bounds.x;
@@ -412,18 +448,18 @@ PIXI.DisplayObjectContainer.prototype.getBounds = function (targetCoordinateSpac
     bounds.width = maxX - minX;
     bounds.height = maxY - minY;
 
-    if (isTargetCoordinateSpaceDisplayObject) 
-	{
+    if (isTargetCoordinateSpaceDisplayObject)
+    {
         targetCoordinateSpace.worldTransform = matrixCache;
 
-        for (i = 0; i < targetCoordinateSpace.children.length; i++) 
-		{
+        for (i = 0; i < targetCoordinateSpace.children.length; i++)
+        {
             targetCoordinateSpace.children[i].updateTransform();
         }
     }
 
-    if (!isTargetCoordinateSpaceThisOrParent) 
-	{
+    if (!isTargetCoordinateSpaceThisOrParent)
+    {
         var targetCoordinateSpaceBounds = targetCoordinateSpace.getBounds();
 
         bounds.x -= targetCoordinateSpaceBounds.x;
@@ -437,10 +473,11 @@ PIXI.DisplayObjectContainer.prototype.getBounds = function (targetCoordinateSpac
 /**
  * Retrieves the non-global local bounds of the displayObjectContainer as a rectangle without any transformations. The calculation takes all visible children into consideration.
  *
- * @method getLocalBounds
+ * @method PIXI.DisplayObjectContainer#getLocalBounds
  * @return {Rectangle} The rectangular bounding area
  */
-PIXI.DisplayObjectContainer.prototype.getLocalBounds = function () {
+PIXI.DisplayObjectContainer.prototype.getLocalBounds = function ()
+{
 
     return this.getBounds(this);
 
@@ -449,22 +486,23 @@ PIXI.DisplayObjectContainer.prototype.getLocalBounds = function () {
 /**
 * Determines whether the specified display object is a child of the DisplayObjectContainer instance or the instance itself.
 *
-* @method contains
+* @method PIXI.DisplayObjectContainer#contains
 * @param {DisplayObject} child
 * @returns {boolean}
 */
-PIXI.DisplayObjectContainer.prototype.contains = function (child) {
+PIXI.DisplayObjectContainer.prototype.contains = function (child)
+{
 
     if (!child)
     {
         return false;
     }
-    else if (child === this) 
-	{
+    else if (child === this)
+    {
         return true;
     }
-    else 
-	{
+    else
+    {
         return this.contains(child.parent);
     }
 };
@@ -472,23 +510,24 @@ PIXI.DisplayObjectContainer.prototype.contains = function (child) {
 /**
 * Renders the object using the WebGL renderer
 *
-* @method _renderWebGL
-* @param renderSession {RenderSession} 
+* @method PIXI.DisplayObjectContainer#_renderWebGL
+* @param renderSession {RenderSession}
 * @private
 */
-PIXI.DisplayObjectContainer.prototype._renderWebGL = function (renderSession) {
+PIXI.DisplayObjectContainer.prototype._renderWebGL = function (renderSession)
+{
 
     if (!this.visible || this.alpha <= 0)
     {
         return;
     }
-    
+
     if (this._cacheAsBitmap)
     {
         this._renderCachedSprite(renderSession);
         return;
     }
-    
+
     var i;
 
     if (this._mask || this._filters)
@@ -515,9 +554,9 @@ PIXI.DisplayObjectContainer.prototype._renderWebGL = function (renderSession) {
 
         renderSession.spriteBatch.stop();
 
-        if (this._mask) renderSession.maskManager.popMask(this._mask, renderSession);
-        if (this._filters) renderSession.filterManager.popFilter();
-        
+        if (this._mask) { renderSession.maskManager.popMask(this._mask, renderSession); }
+        if (this._filters) { renderSession.filterManager.popFilter(); }
+
         renderSession.spriteBatch.start();
     }
     else
@@ -534,11 +573,12 @@ PIXI.DisplayObjectContainer.prototype._renderWebGL = function (renderSession) {
 /**
 * Renders the object using the Canvas renderer
 *
-* @method _renderCanvas
-* @param renderSession {RenderSession} 
+* @method PIXI.DisplayObjectContainer#_renderCanvas
+* @param renderSession {RenderSession}
 * @private
 */
-PIXI.DisplayObjectContainer.prototype._renderCanvas = function (renderSession) {
+PIXI.DisplayObjectContainer.prototype._renderCanvas = function (renderSession)
+{
 
     if (this.visible === false || this.alpha === 0)
     {
@@ -571,17 +611,19 @@ PIXI.DisplayObjectContainer.prototype._renderCanvas = function (renderSession) {
 /**
  * The width of the displayObjectContainer, setting this will actually modify the scale to achieve the value set
  *
- * @property width
+ * @name PIXI.DisplayObjectContainer#width
  * @type Number
  */
 Object.defineProperty(PIXI.DisplayObjectContainer.prototype, 'width', {
 
-    get: function() {
+    get: function ()
+    {
         return this.getLocalBounds().width * this.scale.x;
     },
 
-    set: function(value) {
-        
+    set: function (value)
+    {
+
         var width = this.getLocalBounds().width;
 
         if (width !== 0)
@@ -592,7 +634,7 @@ Object.defineProperty(PIXI.DisplayObjectContainer.prototype, 'width', {
         {
             this.scale.x = 1;
         }
-        
+
         this._width = value;
     }
 });
@@ -600,16 +642,18 @@ Object.defineProperty(PIXI.DisplayObjectContainer.prototype, 'width', {
 /**
  * The height of the displayObjectContainer, setting this will actually modify the scale to achieve the value set
  *
- * @property height
+ * @name PIXI.DisplayObjectContainer#height
  * @type Number
  */
 Object.defineProperty(PIXI.DisplayObjectContainer.prototype, 'height', {
 
-    get: function() {
+    get: function ()
+    {
         return this.getLocalBounds().height * this.scale.y;
     },
 
-    set: function(value) {
+    set: function (value)
+    {
 
         var height = this.getLocalBounds().height;
 
@@ -626,4 +670,3 @@ Object.defineProperty(PIXI.DisplayObjectContainer.prototype, 'height', {
     }
 
 });
-

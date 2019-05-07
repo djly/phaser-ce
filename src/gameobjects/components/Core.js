@@ -12,6 +12,13 @@
 Phaser.Component.Core = function () {};
 
 /**
+ * @property {boolean} skipTypeChecks - Skip type checks in {@link #init}.
+ * @static
+ * @default
+ */
+Phaser.Component.Core.skipTypeChecks = false;
+
+/**
 * Installs / registers mixin components.
 *
 * The `this` context should be that of the applicable object instance or prototype.
@@ -19,7 +26,8 @@ Phaser.Component.Core = function () {};
 * @method
 * @protected
 */
-Phaser.Component.Core.install = function (components) {
+Phaser.Component.Core.install = function (components)
+{
 
     // Always install 'Core' first
     Phaser.Utils.mixinPrototype(this, Phaser.Component.Core.prototype);
@@ -51,12 +59,31 @@ Phaser.Component.Core.install = function (components) {
 * @method
 * @protected
 */
-Phaser.Component.Core.init = function (game, x, y, key, frame) {
+Phaser.Component.Core.init = function (game, x, y, key, frame)
+{
+
+    if (!Phaser.Component.Core.skipTypeChecks)
+    {
+        if (!(game instanceof Phaser.Game))
+        {
+            throw new Error('The value passed as the `game` argument (' + game + ') is not an instance of Phaser.Game.');
+        }
+
+        if (typeof x !== 'number')
+        {
+            console.warn('The `x` argument value (%s) should be a number.', x);
+            x = 0; // This would be done implicitly in position.set().
+        }
+
+        if (typeof y !== 'number')
+        {
+            console.warn('The `y` argument value (%s) should be a number.', y);
+            y = 0; // This would be done implicitly in position.set().
+        }
+    }
 
     this.game = game;
-
     this.key = key;
-
     this.data = {};
 
     this.position.set(x, y);
@@ -90,12 +117,13 @@ Phaser.Component.Core.init = function (game, x, y, key, frame) {
 
 };
 
-Phaser.Component.Core.preUpdate = function () {
+Phaser.Component.Core.preUpdate = function ()
+{
 
     if (this.pendingDestroy)
     {
         this.destroy();
-        return;
+        return false;
     }
 
     this.previousPosition.set(this.world.x, this.world.y);
@@ -124,10 +152,7 @@ Phaser.Component.Core.preUpdate = function () {
         this.body.preUpdate();
     }
 
-    for (var i = 0; i < this.children.length; i++)
-    {
-        this.children[i].preUpdate();
-    }
+    this.preUpdateChildren();
 
     return true;
 
@@ -204,7 +229,7 @@ Phaser.Component.Core.prototype = {
 
     /**
     * The world coordinates of this Game Object in pixels.
-    * Depending on where in the display list this Game Object is placed this value can differ from `position`, 
+    * Depending on where in the display list this Game Object is placed this value can differ from `position`,
     * which contains the x/y coordinates relative to the Game Objects parent.
     * @property {Phaser.Point} world
     */
@@ -250,10 +275,10 @@ Phaser.Component.Core.prototype = {
     /**
     * A Game Object is that is pendingDestroy is flagged to have its destroy method called on the next logic update.
     * You can set it directly to allow you to flag an object to be destroyed on its next update.
-    * 
-    * This is extremely useful if you wish to destroy an object from within one of its own callbacks 
+    *
+    * This is extremely useful if you wish to destroy an object from within one of its own callbacks
     * such as with Buttons or other Input events.
-    * 
+    *
     * @property {boolean} pendingDestroy
     */
     pendingDestroy: false,
@@ -283,13 +308,15 @@ Phaser.Component.Core.prototype = {
     */
     exists: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this._exists;
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             if (value)
             {
@@ -319,13 +346,40 @@ Phaser.Component.Core.prototype = {
     },
 
     /**
+    * Internal method called by preUpdate.
+    *
+    * @method
+    * @protected
+    */
+    preUpdateChildren: function ()
+    {
+
+        // This can't loop in reverse, we need the renderOrderID to be in sequence
+        var i = 0;
+
+        while (i < this.children.length)
+        {
+            var child = this.children[i];
+
+            child.preUpdate();
+
+            if (this === child.parent)
+            {
+                i++;
+            }
+        }
+
+    },
+
+    /**
     * Override this method in your own custom objects to handle any update requirements.
     * It is called immediately after `preUpdate` and before `postUpdate`.
     * Remember if this Game Object has any children you should call update on those too.
     *
     * @method
     */
-    update: function() {
+    update: function ()
+    {
 
     },
 
@@ -335,7 +389,8 @@ Phaser.Component.Core.prototype = {
     * @method
     * @protected
     */
-    postUpdate: function() {
+    postUpdate: function ()
+    {
 
         if (this.customRender)
         {

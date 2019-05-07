@@ -8,10 +8,28 @@
 * This is a base State class which can be extended if you are creating your own game.
 * It provides quick access to common functions such as the camera, cache, input, match, sound and more.
 *
+* #### Callbacks
+*
+* | start | preload     | loaded     | paused       | stop     |
+* |-------|-------------|------------|--------------|----------|
+* | init  |             |            |              |          |
+* |       | preload     | create     | paused       |          |
+* |       | loadUpdate* | update*    | pauseUpdate* |          |
+* |       |             | postUpdate*|              |          |
+* |       |             | preRender* |              |          |
+* |       | loadRender* | render*    | render*      |          |
+* |       |             |            | resumed      |          |
+* |       |             |            |              | shutdown |
+*
+* Update and render calls (*) are repeated.
+*
+* If your State has a constructor, it will be invoked exactly once, during {@link {@link Phaser.StateManager#add}.
+*
 * @class Phaser.State
 * @constructor
 */
-Phaser.State = function () {
+Phaser.State = function ()
+{
 
     /**
     * @property {Phaser.Game} game - This is a reference to the currently running Game.
@@ -74,7 +92,7 @@ Phaser.State = function () {
     this.stage = null;
 
     /**
-    * @property {Phaser.StateManager} stage - A reference to the State Manager, which controls state changes.
+    * @property {Phaser.StateManager} state - A reference to the State Manager, which controls state changes.
     */
     this.state = null;
 
@@ -118,8 +136,10 @@ Phaser.State.prototype = {
     * or objects before the preloading starts.
     *
     * @method Phaser.State#init
+    * @param {...any} args - Any extra arguments passed to {@link Phaser.StateManager#start} or {@link Phaser.StateManager#restart}.
     */
-    init: function () {
+    init: function ()
+    {
     },
 
     /**
@@ -128,16 +148,20 @@ Phaser.State.prototype = {
     * they won't yet be available.
     *
     * @method Phaser.State#preload
+    * @param {Phaser.Game} game
     */
-    preload: function () {
+    preload: function ()
+    {
     },
 
     /**
     * loadUpdate is called during the Loader process. This only happens if you've set one or more assets to load in the preload method.
     *
     * @method Phaser.State#loadUpdate
+    * @param {Phaser.Game} game
     */
-    loadUpdate: function () {
+    loadUpdate: function ()
+    {
     },
 
     /**
@@ -145,8 +169,10 @@ Phaser.State.prototype = {
     * The difference between loadRender and render is that any objects you render in this method you must be sure their assets exist.
     *
     * @method Phaser.State#loadRender
+    * @param {Phaser.Game} game
     */
-    loadRender: function () {
+    loadRender: function ()
+    {
     },
 
     /**
@@ -154,8 +180,10 @@ Phaser.State.prototype = {
     * If you don't have a preload method then create is the first method called in your State.
     *
     * @method Phaser.State#create
+    * @param {Phaser.Game} game
     */
-    create: function () {
+    create: function ()
+    {
     },
 
     /**
@@ -164,16 +192,34 @@ Phaser.State.prototype = {
     * It is called BEFORE Stage, Tweens, Sounds, Input, Physics, Particles and Plugins have had their postUpdate methods called.
     *
     * @method Phaser.State#update
+    * @param {Phaser.Game} game
     */
-    update: function () {
+    update: function ()
+    {
+    },
+
+    /**
+    * The postUpdate method is left empty for your own use.
+    * It is called during the core game loop AFTER the Stage has had its postUpdate method called (including updateTransform).
+    * It is called BEFORE Plugins have had their postUpdate methods called.
+    * You don't need to call updateTransform yourself here unless Plugins need it.
+    *
+    * @method Phaser.State#postUpdate
+    * @param {Phaser.Game} game
+    */
+    postUpdate: function ()
+    {
     },
 
     /**
     * The preRender method is called after all Game Objects have been updated, but before any rendering takes place.
     *
     * @method Phaser.State#preRender
+    * @param {Phaser.Game} game
+    * @param {number} elapsedTime
     */
-    preRender: function () {
+    preRender: function ()
+    {
     },
 
     /**
@@ -182,48 +228,61 @@ Phaser.State.prototype = {
     * final post-processing style effects here. Note that this happens before plugins postRender takes place.
     *
     * @method Phaser.State#render
+    * @param {Phaser.Game} game
     */
-    render: function () {
+    render: function ()
+    {
     },
 
     /**
     * If your game is set to Scalemode RESIZE then each time the browser resizes it will call this function, passing in the new width and height.
     *
     * @method Phaser.State#resize
+    * @param {number} width
+    * @param {number} height
     */
-    resize: function () {
+    resize: function ()
+    {
     },
 
     /**
     * This method will be called if the core game loop is paused.
     *
     * @method Phaser.State#paused
+    * @param {Phaser.Game} game
     */
-    paused: function () {
+    paused: function ()
+    {
     },
 
     /**
     * This method will be called when the core game loop resumes from a paused state.
     *
     * @method Phaser.State#resumed
+    * @param {Phaser.Game} game
     */
-    resumed: function () {
+    resumed: function ()
+    {
     },
 
     /**
     * pauseUpdate is called while the game is paused instead of preUpdate, update and postUpdate.
     *
     * @method Phaser.State#pauseUpdate
+    * @param {Phaser.Game} game
     */
-    pauseUpdate: function () {
+    pauseUpdate: function ()
+    {
     },
 
     /**
     * This method will be called when the State is shutdown (i.e. you switch to another state from this one).
     *
     * @method Phaser.State#shutdown
+    * @param {Phaser.Game} game
     */
-    shutdown: function () {
+    shutdown: function ()
+    {
     }
 
 };

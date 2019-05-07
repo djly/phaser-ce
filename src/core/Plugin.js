@@ -7,12 +7,25 @@
 /**
 * This is a base Plugin template to use for any Phaser plugin development.
 *
+* ##### Callbacks
+*
+* add  | active      | visible     | remove
+* -----|-------------|-------------|--------
+* init |             |             |
+*      | preUpdate*  |             |
+*      | update*     | render*     |
+*      | postUpdate* | postRender* |
+*      |             |             | destroy
+*
+* Update and render calls are repeated (*).
+*
 * @class Phaser.Plugin
 * @constructor
 * @param {Phaser.Game} game - A reference to the currently running game.
 * @param {any} parent - The object that owns this plugin, usually Phaser.PluginManager.
 */
-Phaser.Plugin = function (game, parent) {
+Phaser.Plugin = function (game, parent)
+{
 
     if (parent === undefined) { parent = null; }
 
@@ -77,7 +90,8 @@ Phaser.Plugin.prototype = {
     * It is only called if active is set to true.
     * @method Phaser.Plugin#preUpdate
     */
-    preUpdate: function () {
+    preUpdate: function ()
+    {
     },
 
     /**
@@ -85,7 +99,8 @@ Phaser.Plugin.prototype = {
     * It is only called if active is set to true.
     * @method Phaser.Plugin#update
     */
-    update: function () {
+    update: function ()
+    {
     },
 
     /**
@@ -93,7 +108,8 @@ Phaser.Plugin.prototype = {
     * It is only called if visible is set to true.
     * @method Phaser.Plugin#render
     */
-    render: function () {
+    render: function ()
+    {
     },
 
     /**
@@ -101,14 +117,16 @@ Phaser.Plugin.prototype = {
     * It is only called if visible is set to true.
     * @method Phaser.Plugin#postRender
     */
-    postRender: function () {
+    postRender: function ()
+    {
     },
 
     /**
     * Clear down this Plugin and null out references
     * @method Phaser.Plugin#destroy
     */
-    destroy: function () {
+    destroy: function ()
+    {
 
         this.game = null;
         this.parent = null;

@@ -12,7 +12,8 @@
 
 var path = require('path');
 
-function looksLikeItMightContain (haystack, needle) {
+function looksLikeItMightContain (haystack, needle)
+{
 
     haystack = haystack || '';
     needle = needle || '';
@@ -25,7 +26,8 @@ function looksLikeItMightContain (haystack, needle) {
 }
 
 exports.handlers = {};
-exports.handlers.newDoclet = function (e) {
+exports.handlers.newDoclet = function (e)
+{
 
     var doclet = e.doclet;
     var props = e.doclet.properties;
@@ -37,24 +39,31 @@ exports.handlers.newDoclet = function (e) {
         // "Duplicate"
         var prop = props[0];
 
+        // Common!
+        // console.log('Duplicate? %s', prop.name);
+        //
+        var name = doclet.longname || doclet.name;
+
         if (!doclet.type)
         {
+            console.log('[%s] Copying type from @property', name);
             doclet.type = prop.type;
         }
 
         if (!doclet.description)
         {
+            console.log('[%s] Copying description from @property (%s)', name);
             doclet.description = prop.description;
         }
-        else if (prop.description &&
-            !looksLikeItMightContain(doclet.description, prop.description))
+        else if (prop.description && !looksLikeItMightContain(doclet.description, prop.description))
         {
             // Tack it on..
-            doclet.description += " " + prop.description;
+            console.log('[%s] Appending description from @property (%s)', name);
+            doclet.description += ' ' + prop.description;
         }
 
         // And no more prop
-        e.doclet.properties = undefined;
+        e.doclet.properties = null;
     }
 
 };

@@ -19,7 +19,14 @@ Phaser.Component.InWorld = function () {};
  *
  * @method
  */
-Phaser.Component.InWorld.preUpdate = function () {
+Phaser.Component.InWorld.preUpdate = function ()
+{
+
+    if (this.pendingDestroy)
+    {
+        this.destroy();
+        return false;
+    }
 
     //  Cache the bounds if we need it
     if (this.autoCull || this.checkWorldBounds)
@@ -128,7 +135,8 @@ Phaser.Component.InWorld.prototype = {
     */
     inWorld: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this.game.world.bounds.intersects(this.getBounds());
 

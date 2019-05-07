@@ -23,7 +23,8 @@ Phaser.Component.Bounds.prototype = {
     */
     offsetX: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this.anchor.x * this.width;
 
@@ -41,7 +42,8 @@ Phaser.Component.Bounds.prototype = {
     */
     offsetY: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this.anchor.y * this.height;
 
@@ -50,20 +52,22 @@ Phaser.Component.Bounds.prototype = {
     },
 
     /**
-    * The center x coordinate of the Game Object.
+    * The local center x coordinate of the Game Object.
     * This is the same as `(x - offsetX) + (width / 2)`.
     *
     * @property {number} centerX
     */
     centerX: {
 
-        get: function () {
+        get: function ()
+        {
 
             return (this.x - this.offsetX) + (this.width * 0.5);
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.x = (value + this.offsetX) - (this.width * 0.5);
 
@@ -72,20 +76,22 @@ Phaser.Component.Bounds.prototype = {
     },
 
     /**
-    * The center y coordinate of the Game Object.
+    * The local center y coordinate of the Game Object.
     * This is the same as `(y - offsetY) + (height / 2)`.
     *
     * @property {number} centerY
     */
     centerY: {
 
-        get: function () {
+        get: function ()
+        {
 
             return (this.y - this.offsetY) + (this.height * 0.5);
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.y = (value + this.offsetY) - (this.height * 0.5);
 
@@ -101,13 +107,15 @@ Phaser.Component.Bounds.prototype = {
     */
     left: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this.x - this.offsetX;
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.x = value + this.offsetX;
 
@@ -123,13 +131,15 @@ Phaser.Component.Bounds.prototype = {
     */
     right: {
 
-        get: function () {
+        get: function ()
+        {
 
             return (this.x + this.width) - this.offsetX;
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.x = value - (this.width) + this.offsetX;
 
@@ -145,13 +155,15 @@ Phaser.Component.Bounds.prototype = {
     */
     top: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this.y - this.offsetY;
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.y = value + this.offsetY;
 
@@ -167,13 +179,15 @@ Phaser.Component.Bounds.prototype = {
     */
     bottom: {
 
-        get: function () {
+        get: function ()
+        {
 
             return (this.y + this.height) - this.offsetY;
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.y = value - (this.height) + this.offsetY;
 
@@ -186,17 +200,17 @@ Phaser.Component.Bounds.prototype = {
     * 'container', to one of 9 possible positions.
     *
     * The container must be a Game Object, or Phaser.Rectangle object. This can include properties
-    * such as `World.bounds` or `Camera.view`, for aligning Game Objects within the world 
+    * such as `World.bounds` or `Camera.view`, for aligning Game Objects within the world
     * and camera bounds. Or it can include other Sprites, Images, Text objects, BitmapText,
     * TileSprites or Buttons.
     *
     * Please note that aligning a Sprite to another Game Object does **not** make it a child of
     * the container. It simply modifies its position coordinates so it aligns with it.
-    * 
+    *
     * The position constants you can use are:
-    * 
-    * `Phaser.TOP_LEFT`, `Phaser.TOP_CENTER`, `Phaser.TOP_RIGHT`, `Phaser.LEFT_CENTER`, 
-    * `Phaser.CENTER`, `Phaser.RIGHT_CENTER`, `Phaser.BOTTOM_LEFT`, 
+    *
+    * `Phaser.TOP_LEFT`, `Phaser.TOP_CENTER`, `Phaser.TOP_RIGHT`, `Phaser.LEFT_CENTER`,
+    * `Phaser.CENTER`, `Phaser.RIGHT_CENTER`, `Phaser.BOTTOM_LEFT`,
     * `Phaser.BOTTOM_CENTER` and `Phaser.BOTTOM_RIGHT`.
     *
     * The Game Objects are placed in such a way that their _bounds_ align with the
@@ -220,7 +234,8 @@ Phaser.Component.Bounds.prototype = {
     * @param {integer} [offsetY=0] - A vertical adjustment of the Containers bounds, applied to the aligned position of the Game Object. Use a negative value to shrink the bounds, positive to increase it.
     * @return {Object} This Game Object.
     */
-    alignIn: function (container, position, offsetX, offsetY) {
+    alignIn: function (container, position, offsetX, offsetY)
+    {
 
         if (offsetX === undefined) { offsetX = 0; }
         if (offsetY === undefined) { offsetY = 0; }
@@ -283,18 +298,18 @@ Phaser.Component.Bounds.prototype = {
     * 'parent', in one of 11 possible positions.
     *
     * The parent must be a Game Object, or Phaser.Rectangle object. This can include properties
-    * such as `World.bounds` or `Camera.view`, for aligning Game Objects within the world 
+    * such as `World.bounds` or `Camera.view`, for aligning Game Objects within the world
     * and camera bounds. Or it can include other Sprites, Images, Text objects, BitmapText,
     * TileSprites or Buttons.
     *
     * Please note that aligning a Sprite to another Game Object does **not** make it a child of
     * the parent. It simply modifies its position coordinates so it aligns with it.
-    * 
+    *
     * The position constants you can use are:
-    * 
-    * `Phaser.TOP_LEFT` (default), `Phaser.TOP_CENTER`, `Phaser.TOP_RIGHT`, `Phaser.LEFT_TOP`, 
-    * `Phaser.LEFT_CENTER`, `Phaser.LEFT_BOTTOM`, `Phaser.RIGHT_TOP`, `Phaser.RIGHT_CENTER`, 
-    * `Phaser.RIGHT_BOTTOM`, `Phaser.BOTTOM_LEFT`, `Phaser.BOTTOM_CENTER` 
+    *
+    * `Phaser.TOP_LEFT` (default), `Phaser.TOP_CENTER`, `Phaser.TOP_RIGHT`, `Phaser.LEFT_TOP`,
+    * `Phaser.LEFT_CENTER`, `Phaser.LEFT_BOTTOM`, `Phaser.RIGHT_TOP`, `Phaser.RIGHT_CENTER`,
+    * `Phaser.RIGHT_BOTTOM`, `Phaser.BOTTOM_LEFT`, `Phaser.BOTTOM_CENTER`
     * and `Phaser.BOTTOM_RIGHT`.
     *
     * The Game Objects are placed in such a way that their _bounds_ align with the
@@ -318,7 +333,8 @@ Phaser.Component.Bounds.prototype = {
     * @param {integer} [offsetY=0] - A vertical adjustment of the Containers bounds, applied to the aligned position of the Game Object. Use a negative value to shrink the bounds, positive to increase it.
     * @return {Object} This Game Object.
     */
-    alignTo: function (parent, position, offsetX, offsetY) {
+    alignTo: function (parent, position, offsetX, offsetY)
+    {
 
         if (offsetX === undefined) { offsetX = 0; }
         if (offsetY === undefined) { offsetY = 0; }

@@ -13,7 +13,8 @@
 * @constructor
 * @param {Phaser.Tween} parent - The Tween that owns this TweenData object.
 */
-Phaser.TweenData = function (parent) {
+Phaser.TweenData = function (parent)
+{
 
     /**
     * @property {Phaser.Tween} parent - The Tween which owns this TweenData.
@@ -62,13 +63,13 @@ Phaser.TweenData = function (parent) {
     this.percent = 0;
 
     /**
-    * @property {number} value - The current calculated value.
+    * @property {number} value - The output of the easing function for the current {@link #percent}. Depending on the easing function, this will be within [0, 1] or a slightly larger range (e.g., Bounce). When easing is Linear, this will be identical to {@link #percent}.
     * @readonly
     */
     this.value = 0;
 
     /**
-    * @property {number} repeatCounter - If the Tween is set to repeat this contains the current repeat count.
+    * @property {number} repeatCounter - If the Tween is set to repeat this is the number of repeats remaining (and `repeatTotal - repeatCounter` is the number of repeats completed).
     */
     this.repeatCounter = 0;
 
@@ -86,6 +87,7 @@ Phaser.TweenData = function (parent) {
     /**
     * @property {boolean} interpolate - True if the Tween will use interpolation (i.e. is an Array to Array tween)
     * @default
+    * @todo Appears unused.
     */
     this.interpolate = false;
 
@@ -129,7 +131,7 @@ Phaser.TweenData = function (parent) {
     this.easingFunction = Phaser.Easing.Default;
 
     /**
-    * @property {function} interpolationFunction - The interpolation function used for the Tween.
+    * @property {function} interpolationFunction - The interpolation function used for Array-based Tween.
     * @default Phaser.Math.linearInterpolation
     */
     this.interpolationFunction = Phaser.Math.linearInterpolation;
@@ -193,7 +195,8 @@ Phaser.TweenData.prototype = {
     * @param {boolean} [yoyo=false] - A tween that yoyos will reverse itself and play backwards automatically. A yoyo'd tween doesn't fire the Tween.onComplete event, so listen for Tween.onLoop instead.
     * @return {Phaser.TweenData} This Tween object.
     */
-    to: function (properties, duration, ease, delay, repeat, yoyo) {
+    to: function (properties, duration, ease, delay, repeat, yoyo)
+    {
 
         this.vEnd = properties;
         this.duration = duration;
@@ -221,7 +224,8 @@ Phaser.TweenData.prototype = {
     * @param {boolean} [yoyo=false] - A tween that yoyos will reverse itself and play backwards automatically. A yoyo'd tween doesn't fire the Tween.onComplete event, so listen for Tween.onLoop instead.
     * @return {Phaser.TweenData} This Tween object.
     */
-    from: function (properties, duration, ease, delay, repeat, yoyo) {
+    from: function (properties, duration, ease, delay, repeat, yoyo)
+    {
 
         this.vEnd = properties;
         this.duration = duration;
@@ -242,7 +246,8 @@ Phaser.TweenData.prototype = {
     * @method Phaser.TweenData#start
     * @return {Phaser.TweenData} This Tween object.
     */
-    start: function () {
+    start: function ()
+    {
 
         this.startTime = this.game.time.time + this.delay;
 
@@ -276,7 +281,6 @@ Phaser.TweenData.prototype = {
         }
 
         this.value = 0;
-        this.yoyoCounter = 0;
         this.repeatCounter = this.repeatTotal;
 
         return this;
@@ -290,7 +294,8 @@ Phaser.TweenData.prototype = {
     * @method Phaser.TweenData#loadValues
     * @return {Phaser.TweenData} This Tween object.
     */
-    loadValues: function () {
+    loadValues: function ()
+    {
 
         for (var property in this.parent.properties)
         {
@@ -309,7 +314,7 @@ Phaser.TweenData.prototype = {
                 {
                     //  Put the start value at the beginning of the array
                     //  but we only want to do this once, if the Tween hasn't run before
-                    this.vEnd[property] = [this.vStart[property]].concat(this.vEnd[property]);
+                    this.vEnd[property] = [ this.vStart[property] ].concat(this.vEnd[property]);
                 }
             }
 
@@ -318,7 +323,7 @@ Phaser.TweenData.prototype = {
                 if (typeof this.vEnd[property] === 'string')
                 {
                     //  Parses relative end values with start as base (e.g.: +10, -3)
-                    this.vEnd[property] = this.vStart[property] + parseFloat(this.vEnd[property], 10);
+                    this.vEnd[property] = this.vStart[property] + parseFloat(this.vEnd[property]);
                 }
 
                 this.parent.properties[property] = this.vEnd[property];
@@ -345,7 +350,8 @@ Phaser.TweenData.prototype = {
     * @param {number} time - A timestamp passed in by the Tween parent.
     * @return {number} The current status of this Tween. One of the Phaser.TweenData constants: PENDING, RUNNING, LOOPED or COMPLETE.
     */
-    update: function (time) {
+    update: function (time)
+    {
 
         if (!this.isRunning)
         {
@@ -403,7 +409,7 @@ Phaser.TweenData.prototype = {
         {
             return this.repeat();
         }
-        
+
         return Phaser.TweenData.RUNNING;
 
     },
@@ -417,7 +423,8 @@ Phaser.TweenData.prototype = {
     * @param {number} [frameRate=60] - The speed in frames per second that the data should be generated at. The higher the value, the larger the array it creates.
     * @return {array} An array of tweened values.
     */
-    generateData: function (frameRate) {
+    generateData: function (frameRate)
+    {
 
         if (this.parent.reverse)
         {
@@ -458,7 +465,7 @@ Phaser.TweenData.prototype = {
 
                 if (Array.isArray(end))
                 {
-                    blob[property] = this.interpolationFunction(end, this.value);
+                    blob[property] = this.interpolationFunction.call(this.interpolationContext, end, this.value);
                 }
                 else
                 {
@@ -493,7 +500,8 @@ Phaser.TweenData.prototype = {
     * @method Phaser.TweenData#repeat
     * @return {number} Either Phaser.TweenData.LOOPED or Phaser.TweenData.COMPLETE.
     */
-    repeat: function () {
+    repeat: function ()
+    {
 
         //  If not a yoyo and repeatCounter = 0 then we're done
         if (this.yoyo)
@@ -516,11 +524,9 @@ Phaser.TweenData.prototype = {
             this.inReverse = !this.inReverse;
         }
         else
+        if (this.repeatCounter === 0)
         {
-            if (this.repeatCounter === 0)
-            {
-                return Phaser.TweenData.COMPLETE;
-            }
+            return Phaser.TweenData.COMPLETE;
         }
 
         if (this.inReverse)

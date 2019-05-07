@@ -325,6 +325,22 @@ Utils.vec2Interp = function(vec_1, vec_2, ratio)
 	return retVec;
 };
 
+Utils.ptsInterp = function(src_pts, target_pts, fraction)
+{
+    var ret_pts = [];
+    for (var i = 0; i < src_pts.length; i++)
+    {
+        ret_pts.push(Utils.vec2Interp(src_pts[i], target_pts[i], fraction));
+    }
+
+    return ret_pts;
+};
+
+Utils.scalarInterp = function(src_val, target_val, fraction)
+{
+    return ((1.0 - fraction) * src_val) + (fraction * target_val);
+};
+
 // MeshBone
 function MeshBone(key_in, start_pt_in, end_pt_in, parent_transform)
 {
@@ -815,6 +831,7 @@ function MeshRenderRegion(indices_in, rest_pts_in, uvs_in, start_pt_index_in, en
 	this.uv_warp_local_offset = vec2.fromValues(0,0);
 	this.uv_warp_global_offset = vec2.fromValues(0,0);
 	this.uv_warp_scale = vec2.fromValues(1,1);
+	this.opacity = 100.0;
 	this.start_pt_index = start_pt_index_in;
 	this.end_pt_index = end_pt_index_in;
 	this.start_index = start_index_in;
@@ -1405,6 +1422,27 @@ MeshUVWarpCache.prototype.getEnabled = function() {
   return this.enabled;
 };
 
+// MeshOpacityCache
+function MeshOpacityCache(key_in)
+{
+  this.opacity = 100.0;
+  this.key = key_in;
+};
+
+MeshOpacityCache.prototype.setOpacity = function(value_in)
+{
+  this.opacity = value_in;
+};
+
+MeshOpacityCache.prototype.getOpacity = function()
+{
+  return this.opacity;
+};
+
+MeshOpacityCache.prototype.getKey = function() {
+  return this.key;
+};
+
 // MeshBoneCacheManager
 function MeshBoneCacheManager()
 {
@@ -1642,7 +1680,7 @@ MeshDisplacementCacheManager.prototype.retrieveValuesAtTime = function(time_in, 
       }
       else {
         for(var j = 0; j < displacements.length; j++) {
-          displacements.set[j] = vec2.create();
+          displacements[j] = vec2.create();
         }
       }
     }
@@ -1805,8 +1843,162 @@ MeshUVWarpCacheManager.prototype.makeAllReady = function()
   }
 };
 
+// MeshOpacityCacheManager
+function MeshOpacityCacheManager()
+{
+  this.is_ready = false;
+  this.opacity_cache_table = null;
+  this.opacity_cache_data_ready = null;
+  this.opacity_cache_table = [];
+  this.opacity_cache_data_ready = [];	
+};
+
+MeshOpacityCacheManager.prototype.init = function(start_time_in, end_time_in)
+{
+  this.start_time = start_time_in;
+  this.end_time = end_time_in;
+
+  var num_frames = this.end_time - this.start_time + 1;
+  this.opacity_cache_table = [];
+
+  this.opacity_cache_data_ready = [];
+  for(var i = 0; i < num_frames; i++) {
+    this.opacity_cache_table.push([]);
+    this.opacity_cache_data_ready.push(false);
+  }
+
+  this.is_ready = false;
+};
+
+MeshOpacityCacheManager.prototype.getStartTime = function()
+{
+  return this.start_time;
+};
+
+MeshOpacityCacheManager.prototype.getEndime = function()
+{
+  return this.end_time;
+};
+
+MeshOpacityCacheManager.prototype.getIndexByTime = function(time_in)
+{
+  var retval = time_in - this.start_time;
+  retval = Utils.clamp(retval, 0, (this.opacity_cache_table.length) - 1);
+
+  return retval;
+};
+
+MeshOpacityCacheManager.prototype.retrieveValuesAtTime = function(time_in, regions_map)
+{
+  var base_time = this.getIndexByTime(Math.floor(time_in));
+  var end_time = this.getIndexByTime(Math.ceil(time_in));
+
+  var ratio = (time_in - Math.floor(time_in));
+
+  if(this.opacity_cache_data_ready.length == 0) {
+    return;
+  }
+
+  if((this.opacity_cache_data_ready[base_time] == false)
+      || (this.opacity_cache_data_ready[end_time] == false))
+  {
+    return;
+  }
+
+  var base_cache = this.opacity_cache_table[base_time];
+
+  for(var i = 0; i < base_cache.length; i++) {
+    var base_data = base_cache[i];
+    var cur_key = base_data.getKey();
+
+    var set_region = regions_map[cur_key];
+    set_region.opacity = base_data.getOpacity();
+  }
+};
+
+MeshOpacityCacheManager.prototype.allReady = function()
+{
+  if(this.is_ready) {
+    return true;
+  }
+  else {
+    var num_frames = this.end_time - this.start_time + 1;
+    var ready_cnt = 0;
+    for(var i = 0; i < this.opacity_cache_data_ready.length; i++) {
+      if(opacity_cache_data_ready[i]) {
+        ready_cnt++;
+      }
+    }
+
+    if(ready_cnt == num_frames) {
+      this.is_ready = true;
+    }
+  }
+
+  return this.is_ready;
+};
+
+MeshOpacityCacheManager.prototype.makeAllReady = function()
+{
+  for(var i = 0; i < this.opacity_cache_data_ready.length; i++) {
+    this.opacity_cache_data_ready[i] = true;
+  }
+};
+
 // CreatureModuleUtils
 var CreatureModuleUtils = {};
+
+CreatureModuleUtils.LoadCreatureFlatData = function(input_bytes)
+{
+	var buf = new flatbuffers.ByteBuffer(input_bytes);
+	return CreatureFlatData.rootData.getRootAsrootData(buf);
+};
+
+CreatureModuleUtils.BuildCreatureMetaData = function(json_data)
+{
+  var meta_data = new CreatureMetaData();
+  // Skin Swap
+  if("skinSwapList" in json_data)
+  {
+    var skin_swap_obj = json_data["skinSwapList"];
+    for(var swap_name in skin_swap_obj)
+    {
+      var swap_data = skin_swap_obj[swap_name]["swap"];
+      var swap_items = swap_data["swap_items"];
+      var swap_set = {};
+      for(var i = 0; i < swap_items.length; i++)
+      {
+        var cur_item = swap_items[i];
+        swap_set[cur_item] = cur_item;
+      }
+
+      meta_data.skin_swaps[swap_name] = swap_set;
+    }
+  }
+
+  // Events Triggers
+  if("eventTriggers" in json_data)
+  {
+    var events_obj = json_data["eventTriggers"];
+    for (var cur_anim_name in events_obj)
+    {
+        var cur_events_map = {};
+        var cur_obj_array = events_obj[cur_anim_name];
+
+        for (var cur_events_obj in cur_obj_array)
+        {
+            var cur_event_name = cur_events_obj["event_name"];
+            var switch_time = Number(cur_events_obj["switch_time"]);
+
+            cur_events_map[switch_time] = cur_event_name;
+        }
+
+        meta_data.anim_events_map[cur_anim_name] = cur_events_map;
+    }
+  }  
+
+  return meta_data;
+};
 
 CreatureModuleUtils.GetAllAnimationNames = function(json_data)
 {
@@ -1846,9 +2038,41 @@ CreatureModuleUtils.ReadPointsArray2DJSON = function(data, key)
   return ret_list;
 };
 
+CreatureModuleUtils.ReadPointsArray2DFlat = function(data)
+{
+  var raw_array = data;
+  var ret_list = [];
+  var num_points = raw_array.length / 2;
+  for (var i = 0; i < num_points; i++)
+  {
+    var cur_index = i * 2;
+    ret_list.push(
+        vec2.fromValues(raw_array[0 + cur_index], raw_array[1 + cur_index]));
+  }
+
+  return ret_list;
+};
+
 CreatureModuleUtils.ReadFloatArray3DJSON = function(data, key)
 {
   var raw_array = CreatureModuleUtils.getFloatArray(data[key]);
+
+  var ret_list = [];
+  var num_points = raw_array.length / 2;
+  for (var i = 0; i < num_points; i++)
+  {
+    var cur_index = i * 2;
+    ret_list.push(raw_array[0 + cur_index]);
+    ret_list.push(raw_array[1 + cur_index]);
+    ret_list.push(0);
+  }
+
+  return ret_list;
+};
+
+CreatureModuleUtils.ReadFloatArray3DFlat = function(data)
+{
+  var raw_array = data;
 
   var ret_list = [];
   var num_points = raw_array.length / 2;
@@ -1912,17 +2136,73 @@ CreatureModuleUtils.ReadMatrixJSON = function(data, key)
   return retMat;
 };
 
+CreatureModuleUtils.ReadMatrixFlat = function(data)
+{
+  var raw_array = data;
+  var retMat = mat4.create();
+  for(var i = 0; i < 16; i++)
+  {
+  	retMat[i] = raw_array[i];
+  }
+  
+  return retMat;
+};
+
 CreatureModuleUtils.ReadVector2JSON = function(data, key)
 {
   var raw_array = CreatureModuleUtils.getFloatArray(data[key]);
   return vec2.fromValues(raw_array[0], raw_array[1]);
 };
 
+CreatureModuleUtils.ReadVector2Flat = function(data)
+{
+  var raw_array = data;
+  return vec2.fromValues(raw_array[0], raw_array[1]);
+};
 
 CreatureModuleUtils.ReadVector3JSON = function(data, key)
 {
   var raw_array = CreatureModuleUtils.getFloatArray(data[key]);
   return vec3.fromValues(raw_array[0], raw_array[1], 0);
+};
+
+CreatureModuleUtils.ReadVectorFlat = function(data)
+{
+  var raw_array = data;
+  return vec3.fromValues(raw_array[0], raw_array[1], 0);
+};
+
+CreatureModuleUtils.FormBoneHierarchy = function(child_set, bone_data)
+{
+  var root_bone = null;
+  // Find root
+  for(var cur_id in bone_data)
+  {
+    if( (cur_id in child_set) == false) {
+      // not a child, so is root
+	  var cur_data = bone_data[cur_id]; 
+      root_bone = cur_data.first;
+      break;
+    }
+  }
+
+  // construct hierarchy
+  for(var cur_id in bone_data)
+  {
+ 	var cur_data = bone_data[cur_id]; 
+
+    var cur_bone = cur_data.first;
+    var children_ids = cur_data.second;
+    for(var i = 0; i < children_ids.length; i++)
+    {
+      var cur_child_id = children_ids[i];
+      var child_bone = bone_data[cur_child_id].first;
+      cur_bone.addChild(child_bone);
+    }
+
+  }
+
+  return root_bone;
 };
 
 CreatureModuleUtils.CreateBones = function(json_obj, key) {
@@ -1963,34 +2243,47 @@ CreatureModuleUtils.CreateBones = function(json_obj, key) {
   }
 
   // Find root
-  for(var cur_id in bone_data)
+  return this.FormBoneHierarchy(child_set, bone_data);
+};
+
+CreatureModuleUtils.CreateBonesFlat = function(skelIn) {
+  var root_bone = null;
+  //var bone_data = new HashMap<Integer, Tuple<MeshBone, Vector<Integer>>>();
+  var bone_data = {};
+  var child_set = {};
+
+  // layout bones
+  for (var i = 0; i < skelIn.bonesLength(); i++)
   {
-    if( (cur_id in child_set) == false) {
-      // not a child, so is root
-	  var cur_data = bone_data[cur_id]; 
-      root_bone = cur_data.first;
-      break;
+    var cur_node = skelIn.bones(i);
+    var cur_name = cur_node.name();
+
+    var cur_id = cur_node.id(); //GetJSONNodeFromKey(*cur_node, "id")->value.toNumber();
+    var cur_parent_mat = CreatureModuleUtils.ReadMatrixFlat(cur_node.restParentMatArray());
+
+    var cur_local_rest_start_pt = CreatureModuleUtils.ReadFloatArray3DFlat(cur_node.localRestStartPtArray());
+    var cur_local_rest_end_pt = CreatureModuleUtils.ReadFloatArray3DFlat(cur_node.localRestEndPtArray());
+    var cur_children_ids = CreatureModuleUtils.getIntArray(cur_node.childrenArray());
+
+    var new_bone = new MeshBone(cur_name,
+        vec3.create(),
+        vec3.create(),
+        cur_parent_mat);
+    new_bone.local_rest_start_pt = cur_local_rest_start_pt;
+    new_bone.local_rest_end_pt = cur_local_rest_end_pt;
+    new_bone.calcRestData();
+    new_bone.setTagId(cur_id);
+
+    bone_data[cur_id] = {first:new_bone, second:cur_children_ids};
+
+    for(var j = 0; j < cur_children_ids.length; j++){
+      var cur_child_id = cur_children_ids[j];
+      child_set[cur_child_id] = cur_child_id;
     }
   }
 
-  // construct hierarchy
-  for(var cur_id in bone_data)
-  {
- 	var cur_data = bone_data[cur_id]; 
-
-    var cur_bone = cur_data.first;
-    var children_ids = cur_data.second;
-    for(var i = 0; i < children_ids.length; i++)
-    {
-      var cur_child_id = children_ids[i];
-      var child_bone = bone_data[cur_child_id].first;
-      cur_bone.addChild(child_bone);
-    }
-
-  }
-
-
-  return root_bone;
+  // Find root
+  return this.FormBoneHierarchy(child_set, bone_data);
 };
 
 CreatureModuleUtils.CreateRegions = function(json_obj, key, indices_in, rest_pts_in, uvs_in)
@@ -2037,6 +2330,51 @@ CreatureModuleUtils.CreateRegions = function(json_obj, key, indices_in, rest_pts
   return ret_regions;
 };
 
+CreatureModuleUtils.CreateRegionsFlat = function(meshIn, indices_in, rest_pts_in, uvs_in)
+{
+  var ret_regions = [];
+
+  for (var i = 0; i < meshIn.regionsLength(); i++)
+  {
+  	var cur_node = meshIn.regions(i);
+  	var cur_name = cur_node.name();
+
+    var cur_id = cur_node.id(); //(int)GetJSONNodeFromKey(*cur_node, "id")->value.toNumber();
+    var cur_start_pt_index = cur_node.startPtIndex(); //(int)GetJSONNodeFromKey(*cur_node, "start_pt_index")->value.toNumber();
+    var cur_end_pt_index = cur_node.endPtIndex(); //(int)GetJSONNodeFromKey(*cur_node, "end_pt_index")->value.toNumber();
+    var cur_start_index = cur_node.startIndex(); //(int)GetJSONNodeFromKey(*cur_node, "start_index")->value.toNumber();
+    var cur_end_index = cur_node.endIndex(); //(int)GetJSONNodeFromKey(*cur_node, "end_index")->value.toNumber();
+
+    var new_region = new MeshRenderRegion(indices_in,
+        rest_pts_in,
+        uvs_in,
+        cur_start_pt_index,
+        cur_end_pt_index,
+        cur_start_index,
+        cur_end_index);
+
+    new_region.setName(cur_name);
+    new_region.setTagId(cur_id);
+
+    // Read in weights
+    var weight_map =
+      new_region.normal_weight_map;
+    var weight_obj = cur_node["weights"];
+
+    for (var j = 0; j < cur_node.weightsLength(); j++)
+    {
+      var w_node = cur_node.weights(j);
+      var w_key = w_node.name();
+      var values = CreatureModuleUtils.getFloatArray(w_node.weightsArray());
+      weight_map[w_key] = values;
+    }
+
+    ret_regions.push(new_region);
+  }
+
+  return ret_regions;
+};
+
 CreatureModuleUtils.GetStartEndTimes = function(json_obj, key)
 {
   var start_time = 0;
@@ -2067,12 +2405,71 @@ CreatureModuleUtils.GetStartEndTimes = function(json_obj, key)
   return {first:start_time, second:end_time};
 };
 
+CreatureModuleUtils.GetStartEndTimesFlat = function(animBonesList)
+{
+  var start_time = 0;
+  var end_time = 0;
+  var first = true;
+
+  for (var i = 0; i < animBonesList.timeSamplesLength(); i++)
+  {
+    var cur_node = animBonesList.timeSamples(i);
+    var cur_num = cur_node.time();
+    if(first) {
+      start_time = cur_num;
+      end_time = cur_num;
+      first = false;
+    }
+    else {
+      if(cur_num > end_time) {
+        end_time = cur_num;
+      }
+      
+      if(cur_num < start_time) {
+        start_time = cur_num;
+      }
+    }
+  }
+
+  return {first:start_time, second:end_time};
+};
+
+CreatureModuleUtils.FillBoneGapCache = function(prev_time, cur_time, set_index, cache_manager, cache_list)
+{
+	var gap_diff = cur_time - prev_time;
+	if (gap_diff > 1)
+	{
+		// Gap Step
+		var prev_index = cache_manager.getIndexByTime(prev_time);
+		for (var j = 1; j < gap_diff; j++)
+		{
+			var gap_fraction = j / gap_diff;
+			var gap_cache_list = [];
+			for (var k = 0; k < cache_list.length; k++)
+			{
+				var cur_data = cache_manager.bone_cache_table[set_index][k];
+				var prev_data = cache_manager.bone_cache_table[prev_index][k];
+				var gap_cache_data = new MeshBoneCache(cur_data.getKey());
+				gap_cache_data.setWorldStartPt(
+					Utils.vecInterp(prev_data.getWorldStartPt(), cur_data.getWorldStartPt(), gap_fraction));
+				gap_cache_data.setWorldEndPt(
+					Utils.vecInterp(prev_data.getWorldEndPt(), cur_data.getWorldEndPt(), gap_fraction));
+
+				gap_cache_list.push(gap_cache_data);
+			}
+
+			cache_manager.bone_cache_table[prev_index + j] = gap_cache_list;
+		}
+	}	
+};
+
 CreatureModuleUtils.FillBoneCache = function(json_obj, key, start_time, end_time, cache_manager)
 {
   var base_obj = json_obj[key];
 
   cache_manager.init(start_time, end_time);
 
+  var prev_time = start_time;
   for (var cur_time in base_obj)
   {
   	var cur_node = base_obj[cur_time];
@@ -2095,9 +2492,84 @@ CreatureModuleUtils.FillBoneCache = function(json_obj, key, start_time, end_time
 
     var set_index = cache_manager.getIndexByTime(cur_time);
     cache_manager.bone_cache_table[set_index] = cache_list;
+    
+    CreatureModuleUtils.FillBoneGapCache(prev_time, cur_time, set_index, cache_manager, cache_list);   
+	prev_time = cur_time;    
   }
 
   cache_manager.makeAllReady();
+};
+
+CreatureModuleUtils.FillBoneCacheFlat = function(animBonesList, start_time, end_time, cache_manager)
+{
+  cache_manager.init(start_time, end_time);
+  
+  var prev_time = start_time;
+  for (var i = 0; i < animBonesList.timeSamplesLength(); i++)
+  {
+  	var cur_node = animBonesList.timeSamples(i);
+  	var cur_time = cur_node.time();
+
+    cache_list = [];
+
+    for (var j = 0; j < cur_node.bonesLength(); j++)
+    {
+      var bone_node = cur_node.bones(j);
+      var cur_name = bone_node.name();
+
+      var cur_start_pt = CreatureModuleUtils.ReadFloatArray3DFlat(bone_node.startPtArray()); //ReadJSONVec4_2(*bone_node, "start_pt");
+      var cur_end_pt = CreatureModuleUtils.ReadFloatArray3DFlat(bone_node.endPtArray()); //ReadJSONVec4_2(*bone_node, "end_pt");
+
+      var cache_data = new MeshBoneCache(cur_name);
+      cache_data.setWorldStartPt(cur_start_pt);
+      cache_data.setWorldEndPt(cur_end_pt);
+
+      cache_list.push(cache_data);
+    }
+
+    var set_index = cache_manager.getIndexByTime(cur_time);
+    cache_manager.bone_cache_table[set_index] = cache_list;
+    
+    CreatureModuleUtils.FillBoneGapCache(prev_time, cur_time, set_index, cache_manager, cache_list);   
+	prev_time = cur_time;        
+  }
+
+  cache_manager.makeAllReady();
+};
+
+CreatureModuleUtils.FillDeformationGapCache = function(prev_time, cur_time, set_index, cache_manager, cache_list)
+{
+	var gap_diff = cur_time - prev_time;
+	if (gap_diff > 1)
+	{
+		// Gap Step
+		var prev_index = cache_manager.getIndexByTime(prev_time);
+		for (var j = 1; j < gap_diff; j++)
+		{
+			var gap_fraction = j / gap_diff;
+			var gap_cache_list = [];
+
+			for (var k = 0; k < cache_list.length; k++)
+			{
+				var cur_data = cache_manager.displacement_cache_table[set_index][k];
+				var prev_data = cache_manager.displacement_cache_table[prev_index][k];
+				var gap_cache_data = new MeshDisplacementCache(cur_data.getKey());
+				if (cur_data.getLocalDisplacements().length > 0)
+				{
+					gap_cache_data.setLocalDisplacements(
+						Utils.ptsInterp(prev_data.getLocalDisplacements(), cur_data.getLocalDisplacements(), gap_fraction));
+				}
+				else {
+					gap_cache_data.setPostDisplacements(
+						Utils.ptsInterp(prev_data.getPostDisplacements(), cur_data.getPostDisplacements(), gap_fraction));
+				}
+
+				gap_cache_list.push(gap_cache_data);
+			}
+
+			cache_manager.displacement_cache_table[prev_index + j] = gap_cache_list;
+		}
+	}	
 };
 
 CreatureModuleUtils.FillDeformationCache = function(json_obj, key, start_time, end_time, cache_manager)
@@ -2105,7 +2577,8 @@ CreatureModuleUtils.FillDeformationCache = function(json_obj, key, start_time, e
   var base_obj = json_obj[key];
 
   cache_manager.init(start_time, end_time);
-
+  
+  var prev_time = start_time;
   for (var cur_time in base_obj)
   {
   	var cur_node = base_obj[cur_time];
@@ -2136,10 +2609,60 @@ CreatureModuleUtils.FillDeformationCache = function(json_obj, key, start_time, e
 
     var set_index = cache_manager.getIndexByTime(cur_time);
     cache_manager.displacement_cache_table[set_index] = cache_list;
+    
+    CreatureModuleUtils.FillDeformationGapCache(prev_time, cur_time, set_index, cache_manager, cache_list);
+    prev_time = cur_time;
   }
 
   cache_manager.makeAllReady();
 };
+
+CreatureModuleUtils.FillDeformationCacheFlat = function(animMeshList, start_time, end_time, cache_manager)
+{
+  cache_manager.init(start_time, end_time);
+
+  var prev_time = start_time;
+  for (var i = 0; i < animMeshList.timeSamplesLength(); i++)
+  {
+  	var cur_node = animMeshList.timeSamples(i);
+  	var cur_time = cur_node.time();
+
+    var cache_list = [];
+
+    for (var j = 0; j < cur_node.meshesLength(); j++)
+    {
+      var mesh_node = cur_node.meshes(j);
+      var cur_name = mesh_node.name();
+
+      var cache_data = new MeshDisplacementCache(cur_name);
+
+      var use_local_displacement = mesh_node.useLocalDisplacements(); //GetJSONNodeFromKey(*mesh_node, "use_local_displacements")->value.toBool();
+      var use_post_displacement = mesh_node.usePostDisplacements(); //GetJSONNodeFromKey(*mesh_node, "use_post_displacements")->value.toBool();
+
+      if(use_local_displacement == true) {
+        var read_pts = CreatureModuleUtils.ReadPointsArray2DFlat(mesh_node.localDisplacementsArray()); //ReadJSONPoints2DVector(*mesh_node, "local_displacements");
+        cache_data.setLocalDisplacements(read_pts);
+      }
+
+      if(use_post_displacement == true) {
+      	var tmpNum = mesh_node.postDisplacementsLength();
+        var read_pts = CreatureModuleUtils.ReadPointsArray2DFlat(mesh_node.postDisplacementsArray()); //ReadJSONPoints2DVector(*mesh_node, "post_displacements");
+        cache_data.setPostDisplacements(read_pts);
+      }
+
+      cache_list.push(cache_data);
+    }
+
+    var set_index = cache_manager.getIndexByTime(cur_time);
+    cache_manager.displacement_cache_table[set_index] = cache_list;
+    
+    CreatureModuleUtils.FillDeformationGapCache(prev_time, cur_time, set_index, cache_manager, cache_list);
+    prev_time = cur_time;    
+  }
+
+  cache_manager.makeAllReady();
+};
+
 
 CreatureModuleUtils.FillUVSwapCache = function(json_obj, key, start_time, end_time, cache_manager)
 {
@@ -2179,10 +2702,249 @@ CreatureModuleUtils.FillUVSwapCache = function(json_obj, key, start_time, end_ti
   cache_manager.makeAllReady();
 };
 
-// Creature
-function Creature(load_data)
+CreatureModuleUtils.FillUVSwapCacheFlat = function(animUVList, start_time, end_time, cache_manager)
 {
-	this.total_num_pts = 0;
+  cache_manager.init(start_time, end_time);
+
+  for (var i = 0; i < animUVList.timeSamplesLength(); i++)
+  {
+  	var cur_node = animUVList.timeSamples(i);
+  	var cur_time = cur_node.time();
+
+    var cache_list = [];
+
+    for (var j = 0; j < cur_node.uvSwapsLength(); j++)
+    {
+      var uv_node = cur_node.uvSwaps(j);
+      var cur_name = uv_node.name();
+
+      var cache_data = new MeshUVWarpCache(cur_name);
+      var use_uv = uv_node.enabled(); //GetJSONNodeFromKey(*uv_node, "enabled")->value.toBool();
+      cache_data.setEnabled(use_uv);
+      if(use_uv == true) {
+        var local_offset = CreatureModuleUtils.ReadVector2Flat(uv_node.localOffsetArray()); //ReadJSONVec2(*uv_node, "local_offset");
+        var global_offset = CreatureModuleUtils.ReadVector2Flat(uv_node.globalOffsetArray()); //ReadJSONVec2(*uv_node, "global_offset");
+        var scale = CreatureModuleUtils.ReadVector2Flat(uv_node.scaleArray()); //ReadJSONVec2(*uv_node, "scale");
+        cache_data.setUvWarpLocalOffset(local_offset);
+        cache_data.setUvWarpGlobalOffset(global_offset);
+        cache_data.setUvWarpScale(scale);
+      }
+
+      cache_list.push(cache_data);
+    }
+
+    var set_index = cache_manager.getIndexByTime(cur_time);
+    cache_manager.uv_cache_table[set_index] = cache_list;
+  }
+
+  cache_manager.makeAllReady();
+};
+
+CreatureModuleUtils.FillOpacityGapCache = function(prev_time, cur_time, set_index, cache_manager, cache_list)
+{
+	var gap_diff = cur_time - prev_time;
+	if (gap_diff > 1)
+	{
+		// Gap Step
+		var prev_index = cache_manager.getIndexByTime(prev_time);
+		for (var j = 1; j < gap_diff; j++)
+		{
+			var gap_fraction = j / gap_diff;
+			var gap_cache_list = [];
+			for (var k = 0; k < cache_list.length; k++)
+			{
+				var cur_data = cache_manager.opacity_cache_table[set_index][k];
+				var prev_data = cache_manager.opacity_cache_table[prev_index][k];
+				var gap_cache_data = new MeshOpacityCache(cur_data.getKey());
+				gap_cache_data.setOpacity(Utils.scalarInterp(prev_data.getOpacity(), cur_data.getOpacity(), gap_fraction));
+
+				gap_cache_list.push(gap_cache_data);
+			}
+
+			cache_manager.opacity_cache_table[prev_index + j] = gap_cache_list;
+		}
+	}	
+};
+
+CreatureModuleUtils.FillOpacityCache = function(json_obj, key, start_time, end_time, cache_manager)
+{
+  var base_obj = json_obj[key];
+
+  cache_manager.init(start_time, end_time);
+
+  var prev_time = start_time;
+  for (var cur_time in base_obj)
+  {
+  	var cur_node = base_obj[cur_time];
+
+    var cache_list = [];
+
+    for (var cur_name in cur_node)
+    {
+      var opacity_node = cur_node[cur_name];
+
+      var cache_data = new MeshOpacityCache(cur_name);
+      cache_data.setOpacity(opacity_node["opacity"]);
+
+      cache_list.push(cache_data);
+    }
+
+    var set_index = cache_manager.getIndexByTime(cur_time);
+    cache_manager.opacity_cache_table[set_index] = cache_list;
+    
+    CreatureModuleUtils.FillOpacityGapCache(prev_time, cur_time, set_index, cache_manager, cache_list);
+    prev_time = cur_time;
+  }
+
+  cache_manager.makeAllReady();
+};
+
+CreatureModuleUtils.FillOpacityCacheFlat = function(animOpacityList, start_time, end_time, cache_manager)
+{
+  cache_manager.init(start_time, end_time);
+
+  var prev_time = start_time;
+  for (var i = 0; i < animOpacityList.timeSamplesLength(); i++)
+  {
+  	var cur_node = animOpacityList.timeSamples(i);
+  	var cur_time = cur_node.time();
+
+    var cache_list = [];
+
+    for (var j = 0; j < cur_node.meshOpacitiesLength(); j++)
+    {
+      var opacity_node = cur_node.meshOpacities(j);
+      var cur_name = opacity_node.name();
+
+      var cache_data = new MeshOpacityCache(cur_name);
+      cache_data.setOpacity(opacity_node.opacity());
+
+      cache_list.push(cache_data);
+    }
+
+    var set_index = cache_manager.getIndexByTime(cur_time);
+    cache_manager.opacity_cache_table[set_index] = cache_list;
+    
+    CreatureModuleUtils.FillOpacityGapCache(prev_time, cur_time, set_index, cache_manager, cache_list);
+    prev_time = cur_time;    
+  }
+
+  cache_manager.makeAllReady();
+};
+
+function CreatureUVSwapPacket (local_offset_in, global_offset_in, scale_in, tag_in)
+{
+	this.local_offset = local_offset_in;
+	this.global_offset = global_offset_in;
+	this.scale = scale_in;
+	this.tag = tag_in;
+};
+
+CreatureModuleUtils.FillSwapUVPacketMap = function(json_obj)
+{
+	ret_map = {};
+	for (var cur_key in json_obj)
+	{
+		var cur_node = json_obj[cur_key];
+		var cur_name = cur_key;
+		var cur_packets = [];
+
+		for (var i = 0; i < cur_node.length; i++)
+		{
+			var packet_node = cur_node[i];
+			var local_offset = CreatureModuleUtils.ReadVector2JSON(packet_node, "local_offset");
+			var global_offset = CreatureModuleUtils.ReadVector2JSON(packet_node, "global_offset");
+			var scale = CreatureModuleUtils.ReadVector2JSON(packet_node, "scale");
+			var tag = packet_node["tag"];
+			
+			var new_packet = new CreatureUVSwapPacket(local_offset, global_offset, scale, tag);
+			cur_packets.push(new_packet);
+		}
+
+		
+		ret_map[cur_name] = cur_packets;
+	};
+
+	return ret_map;
+};
+
+CreatureModuleUtils.FillSwapUVPacketMapFlat = function(uvSwapItemFlatHolder)
+{
+	ret_map = {};
+	for (var i = 0; i < uvSwapItemFlatHolder.meshesLength(); i++)
+	{
+		var cur_node = uvSwapItemFlatHolder.meshes(i);
+		var cur_name = cur_node.name();
+		var cur_packets = [];
+
+		for (var j = 0; j < cur_node.itemsLength(); j++)
+		{
+			var packet_node = cur_node.items(j);
+			var local_offset = CreatureModuleUtils.ReadVector2Flat(packet_node.localOffsetArray());
+			var global_offset = CreatureModuleUtils.ReadVector2Flat(packet_node.globalOffsetArray());
+			var scale = CreatureModuleUtils.ReadVector2Flat(packet_node.scaleArray());
+			var tag = packet_node.tag();
+			
+			var new_packet = new CreatureUVSwapPacket(local_offset, global_offset, scale, tag);
+			cur_packets.push(new_packet);
+		}
+
+		
+		ret_map[cur_name] = cur_packets;
+	};
+
+	return ret_map;
+};
+
+CreatureModuleUtils.FillAnchorPointMap = function(json_obj)
+{
+	var anchor_data_node = json_obj["AnchorPoints"];
+
+	ret_map = {};
+	for (var i = 0; i < anchor_data_node.length; i++)
+	{
+		var cur_node = anchor_data_node[i];
+		var cur_pt = CreatureModuleUtils.ReadVector2JSON(cur_node, "point");
+		var cur_name = cur_node["anim_clip_name"];
+
+		ret_map[cur_name] = cur_pt;
+	}
+
+	return ret_map;
+};
+
+CreatureModuleUtils.FillAnchorPointMapFlat = function(anchorFlatHolder)
+{
+	ret_map = {};
+	for (var i = 0; i < anchorFlatHolder.anchorPointsLength(); i++)
+	{
+		var cur_node = anchorFlatHolder.anchorPoints(i);
+		var cur_pt = CreatureModuleUtils.ReadVector2Flat(cur_node.pointArray());
+		var cur_name = cur_node.animClipName();
+
+		ret_map[cur_name] = cur_pt;
+	}
+
+	return ret_map;
+};
+
+// Creature
+function Creature(load_data, use_flat_data)
+{
+	this.InitDefaultData();
+	
+	if(use_flat_data)
+	{
+	    this.LoadFromDataFlat(load_data);			
+	}
+	else {	
+	    this.LoadFromData(load_data);	
+	}
+};
+
+Creature.prototype.InitDefaultData = function()
+{
+	  this.total_num_pts = 0;
     this.total_num_indices = 0;
     this.global_indices = null;
     this.global_pts = null;
@@ -2193,8 +2955,66 @@ function Creature(load_data)
     this.boundary_indices = [];
     this.boundary_min = vec2.create();
     this.boundary_max = vec2.create();
+    this.uv_swap_packets = {};
+    this.active_uv_swap_actions = {};
+    this.anchor_point_map = {};
+    this.anchor_points_active = false;
+    this.skin_swap_active = false;
+    this.skin_swap_name = "";
+    this.final_skin_swap_indices = null;
+    this.creature_meta_data = null;
+};
 
-    this.LoadFromData(load_data);	
+Creature.prototype.SetMetaData = function(creature_meta_data)
+{
+  this.creature_meta_data = creature_meta_data;
+};
+
+Creature.prototype.EnableSkinSwap = function(swap_name_in, active)
+{
+  this.skin_swap_active = active;
+  if(!this.skin_swap_active)
+  {
+    this.skin_swap_name = "";
+    this.final_skin_swap_indices = null;
+  }
+  else
+  {
+    this.skin_swap_name = swap_name_in;
+    this.final_skin_swap_indices = this.creature_meta_data.buildSkinSwapIndices(
+      this.skin_swap_name, 
+      this.render_composition);    
+  }
+};
+
+Creature.prototype.DisableSkinSwap = function()
+{
+  this.EnableSkinSwap("", false);
+};
+
+Creature.prototype.ShouldSkinSwap = function()
+{
+  return this.creature_meta_data && this.skin_swap_active && this.final_skin_swap_indices;
+};
+
+Creature.prototype.SetActiveItemSwap = function(region_name, swap_idx)
+{
+	this.active_uv_swap_actions[region_name] = swap_idx;
+};
+
+Creature.prototype.RemoveActiveItemSwap = function(region_name)
+{
+	delete this.active_uv_swap_actions[region_name];
+};
+
+Creature.prototype.GetAnchorPoint = function(anim_clip_name_in)
+{
+	if(anim_clip_name_in in this.anchor_point_map)
+	{
+		return this.anchor_point_map[anim_clip_name_in];
+	}
+	
+	return vec2.fromValues(0, 0);
 };
 
 // Fills entire mesh with (r,g,b,a) colours
@@ -2359,19 +3179,113 @@ Creature.prototype.LoadFromData = function(load_data)
   }
 
   this.render_composition.resetToWorldRestPts();
+  
+  // Fill up uv swap packets
+  if("uv_swap_items" in load_data)
+  {
+  	var json_uv_swap_base = load_data["uv_swap_items"];
+  	this.uv_swap_packets = CreatureModuleUtils.FillSwapUVPacketMap(json_uv_swap_base);
+  }
+  
+  // Load Anchor Points
+  if("anchor_points_items" in load_data)
+  {
+  	var anchor_point_base = load_data["anchor_points_items"];
+  	this.anchor_point_map = CreatureModuleUtils.FillAnchorPointMap(anchor_point_base);
+  }
+  
+};
+
+// Load data Flat
+Creature.prototype.LoadFromDataFlat = function(flatRoot)
+{
+  // Load points and topology
+  var flat_mesh = flatRoot.dataMesh();
+  var flat_skeleton = flatRoot.dataSkeleton();
+
+  this.global_pts = CreatureModuleUtils.ReadFloatArray3DFlat(flat_mesh.pointsArray());
+  this.total_num_pts = this.global_pts.length / 3;
+
+  this.global_indices = CreatureModuleUtils.getIntArray(flat_mesh.indicesArray());
+  this.total_num_indices = this.global_indices.length;
+
+  this.global_uvs = CreatureModuleUtils.getFloatArray(flat_mesh.uvsArray());
+  
+  
+  this.render_colours = [];
+  for(var i = 0; i < this.total_num_pts * 4; i++)
+  {
+    this.render_colours.push(0);
+  }
+  this.FillRenderColours(1, 1, 1, 1);
+
+  this.render_pts = [];
+
+  // Load bones
+  var root_bone = CreatureModuleUtils.CreateBonesFlat(flat_skeleton);
+
+
+  // Load regions
+  var regions = CreatureModuleUtils.CreateRegionsFlat(flat_mesh,
+      this.global_indices,
+      this.global_pts,
+      this.global_uvs);
+
+  // Add into composition
+  this.render_composition = new MeshRenderBoneComposition();
+  this.render_composition.setRootBone(root_bone);
+  this.render_composition.getRootBone().computeRestParentTransforms();
+
+  for(var i = 0; i < regions.length; i++) {
+  	var cur_region = regions[i];
+    cur_region.setMainBoneKey(root_bone.getKey());
+    cur_region.determineMainBone(root_bone);
+    this.render_composition.addRegion(cur_region);
+  }
+
+  this.render_composition.initBoneMap();
+  this.render_composition.initRegionsMap();
+
+  for(var i = 0; i < regions.length; i++) {
+  	var cur_region = regions[i];
+    cur_region.initFastNormalWeightMap(this.render_composition.bones_map);
+  }
+
+  this.render_composition.resetToWorldRestPts();
+  
+  // Fill up uv swap packets
+  var flat_uv_swap_item_holder = flatRoot.dataUvSwapItem();
+  this.uv_swap_packets = CreatureModuleUtils.FillSwapUVPacketMapFlat(flat_uv_swap_item_holder);
+  
+  // Load Anchor Points
+  var flat_anchor_holder = flatRoot.dataAnchorPoints();
+  this.anchor_point_map = CreatureModuleUtils.FillAnchorPointMapFlat(flat_anchor_holder);
+  
 };
 
 // CreatureAnimation
-function CreatureAnimation(load_data, name_in)
+function CreatureAnimation(load_data, name_in, use_flat_data)
 {
-    this.name = name_in;
+	this.initDefaultData(name_in);
+	
+	if(use_flat_data)
+	{
+	    this.LoadFromDataFlat(name_in, load_data.dataAnimation());			
+	}
+	else {
+	    this.LoadFromData(name_in, load_data);			
+	}
+};
+
+CreatureAnimation.prototype.initDefaultData = function(name_in)
+{
+	this.name = name_in;
     this.bones_cache = new MeshBoneCacheManager();
     this.displacement_cache = new MeshDisplacementCacheManager();
     this.uv_warp_cache = new MeshUVWarpCacheManager();
+    this.opacity_cache = new MeshOpacityCacheManager();
     this.cache_pts = [];
     this.fill_cache_pts = [];
-
-    this.LoadFromData(name_in, load_data);	
 };
 
 CreatureAnimation.prototype.LoadFromData = function(name_in, load_data)
@@ -2403,6 +3317,54 @@ CreatureAnimation.prototype.LoadFromData = function(name_in, load_data)
       this.start_time,
       this.end_time,
       this.uv_warp_cache);
+      
+  // opacity animation
+  CreatureModuleUtils.FillOpacityCache(json_clip,
+      "mesh_opacities",
+      this.start_time,
+      this.end_time,
+      this.opacity_cache);  
+};
+
+CreatureAnimation.prototype.LoadFromDataFlat = function(name_in, animFlat)
+{
+  var flat_clip = null;
+  for(var i = 0; i < animFlat.clipsLength(); i++)
+  {
+  	if(animFlat.clips(i).name() == name_in)
+  	{
+  		flat_clip = animFlat.clips(i);
+  		break;
+  	}
+  }
+	
+  var start_end_times = CreatureModuleUtils.GetStartEndTimesFlat(flat_clip.bones());
+  this.start_time = start_end_times.first;
+  this.end_time = start_end_times.second;
+
+  // bone animation
+  CreatureModuleUtils.FillBoneCacheFlat(flat_clip.bones(),
+      this.start_time,
+      this.end_time,
+      this.bones_cache);
+
+  // mesh deformation animation
+  CreatureModuleUtils.FillDeformationCacheFlat(flat_clip.meshes(),
+      this.start_time,
+      this.end_time,
+      this.displacement_cache);
+
+  // uv swapping animation
+  CreatureModuleUtils.FillUVSwapCacheFlat(flat_clip.uvSwaps(),
+      this.start_time,
+      this.end_time,
+      this.uv_warp_cache);
+      
+  // opacity animation
+  CreatureModuleUtils.FillOpacityCacheFlat(flat_clip.meshOpacities(),
+      this.start_time,
+      this.end_time,
+      this.opacity_cache);
 };
 
 CreatureAnimation.prototype.getIndexByTime = function(time_in)
@@ -2448,6 +3410,170 @@ CreatureAnimation.prototype.poseFromCachePts = function(time_in, target_pts, num
         }
 };
 
+// CreatureFrameCallback
+function CreatureFrameCallback()
+{
+  this.callback = null;
+  this.name = "";
+  this.animClipName = "";
+  this.frame = 0;
+  this.triggered = false;
+};
+
+CreatureFrameCallback.prototype.resetCallback = function()
+{
+  this.triggered = false;
+};
+
+CreatureFrameCallback.prototype.tryTrigger = function(frameIn)
+{
+  if(this.triggered)
+  {
+    return false;
+  }
+
+  if (Math.round(frameIn) >= this.frame)
+  {
+    this.triggered = true;
+    return true;
+  }
+
+  return false;
+};
+
+// CreatureGameController
+function CreatureGameController(meta_asset)
+{
+  this.meta_asset = meta_asset;
+  this.event_callbacks = [];
+  this.run_time = 0;
+};
+
+// Builds Event Callbacks from MetaData
+CreatureGameController.prototype.BuildFrameCallbacks = function(assignCallbackFn)
+{
+  if(this.meta_asset == null)
+  {
+    return;
+  }
+
+  for (var cur_key in this.meta_asset.anim_events_map)
+  {
+    var cur_val = this.meta_asset.anim_events_map[cur_key];
+    for (var cur_evt_key in cur_val)
+    {
+      var cur_evt = cur_val[cur_evt_key];
+      var new_callback = new CreatureFrameCallback();
+      new_callback.animClipName = cur_key;
+      new_callback.name = cur_evt;
+      new_callback.frame = Number(cur_evt_key);
+      new_callback.callback = assignCallbackFn(animClipName, name);
+
+      this.event_callbacks.push(new_callback);
+    }
+  }
+};
+
+// Manually adds a new event callback
+CreatureGameController.prototype.AddFrameCallback = function(animClipName, name, frame, callbackFb)
+{
+  var new_callback = new CreatureFrameCallback();
+  new_callback.animClipName = animClipName;
+  new_callback.name = name;
+  new_callback.frame = frame;
+  new_callback.callback = callbackFb;
+
+  this.event_callbacks.push(new_callback);
+};
+
+// Resets the callback triggers, Remember to call this whenever you Switch Animations
+CreatureGameController.prototype.ResetFrameCallbacks = function()
+{
+  for (var cur_key in this.event_callbacks)
+  {
+    var frame_callback = this.event_callbacks[cur_key];
+    frame_callback.resetCallback();
+  }
+};
+
+// Call this after every animation update/timestep of your creatureManager
+CreatureGameController.prototype.ProcessCallbacks = function(creature_manager)
+{
+  var cur_runtime = creature_manager.getActualRuntime();
+  if(cur_runtime < this.run_time)
+  {
+    this.ResetFrameCallbacks();
+  }
+
+  this.run_time = cur_runtime;
+
+  for (var i  = 0; i < this.event_callbacks.length; i++)
+  {
+    var frame_callback = this.event_callbacks[i];
+    if (frame_callback.animClipName == creature_manager.active_animation_name)
+    {
+        var should_trigger = frame_callback.tryTrigger(cur_runtime);
+        if (should_trigger && (frame_callback.callback != null))
+        {
+          frame_callback.callback(frame_callback.name, cur_runtime);
+        }
+    }
+  }
+};
+
+// CreatureMetaData
+function CreatureMetaData()
+{
+  this.skin_swaps = {};
+  this.anim_events_map = {};
+};
+
+CreatureMetaData.prototype.clear = function()
+{
+  this.skin_swaps = {};
+  this.anim_events_map = {};
+};
+
+CreatureMetaData.prototype.buildSkinSwapIndices = function(swap_name, bone_composition)
+{
+  var skin_swap_indices = null;
+  if(!(swap_name in this.skin_swaps))
+  {
+    skin_swap_indices = [];
+    return skin_swap_indices;
+  }
+
+  var swap_set = this.skin_swaps[swap_name];
+  var total_size = 0;
+  var regions_map = bone_composition.getRegionsMap();
+  for(var region_name in regions_map)
+  {
+    if(region_name in swap_set)
+    {
+      var cur_region = regions_map[region_name];
+      total_size += cur_region.getNumIndices();
+    }
+  }
+
+  skin_swap_indices = [];
+  var offset = 0;
+  for(var region_name in regions_map)
+  {
+    if(region_name in swap_set)
+    {
+      var cur_region = regions_map[region_name];
+      for(var j = 0; j < cur_region.getNumIndices(); j++)
+      {
+        skin_swap_indices.push(cur_region.getLocalIndex(j));
+      }
+
+      offset += cur_region.getNumIndices();
+    }
+  }
+
+  return skin_swap_indices;
+};
+
 // CreatureManager
 function CreatureManager(target_creature_in)
 {
@@ -2471,6 +3597,15 @@ function CreatureManager(target_creature_in)
     this.active_blend_animation_names = [];
     this.active_blend_animation_names.push("");
     this.active_blend_animation_names.push("");	
+    
+    this.do_auto_blending = false;
+    this.auto_blend_delta = 0.0;
+    
+    this.auto_blend_names = [];
+    this.auto_blend_names.push("");
+    this.auto_blend_names.push("");
+    
+    this.active_blend_run_times = {};
 };
 
 // Create an animation
@@ -2490,7 +3625,7 @@ CreatureManager.prototype.CreateAllAnimations = function(load_data)
     this.CreateAnimation(load_data, cur_name);
   }
 
-  this.SetActiveAnimationName (all_animation_names.get(0));
+  this.SetActiveAnimationName (all_animation_names[0]);
 };
 
 // Add an animation
@@ -2540,36 +3675,8 @@ CreatureManager.prototype.SetActiveAnimationName = function(name_in, check_alrea
   this.active_animation_name = name_in;
   var cur_animation = this.animations[this.active_animation_name];
   this.run_time = cur_animation.start_time;
-
-  var displacement_cache_manager = cur_animation.displacement_cache;
-  var displacement_table =
-    displacement_cache_manager.displacement_cache_table[0];
-
-  var uv_warp_cache_manager = cur_animation.uv_warp_cache;
-  var uv_swap_table =
-    uv_warp_cache_manager.uv_cache_table[0];
-
-  var render_composition =
-    this.target_creature.render_composition;
-
-  var all_regions = render_composition.getRegions();
-
-  var index = 0;
-  for(var i = 0; i < all_regions.length; i++)
-  {
-  	var cur_region = all_regions[i];
-    // Setup active or inactive displacements
-    var use_local_displacements = !(displacement_table[index].getLocalDisplacements().length == 0);
-    var use_post_displacements = !(displacement_table[index].getPostDisplacements().length == 0);
-    cur_region.setUseLocalDisplacements(use_local_displacements);
-    cur_region.setUsePostDisplacements(use_post_displacements);
-
-    // Setup active or inactive uv swaps
-    cur_region.setUseUvWarp(uv_swap_table[index].getEnabled());
-
-    index++;
-  }
-
+  this.UpdateRegionsSwitches(name_in);
+  
   return true;
 };
 
@@ -2597,14 +3704,15 @@ CreatureManager.prototype.MakePointCache = function(animation_name_in)
         }
         
         var cache_pts_list = cur_animation.cache_pts;
-        
+        this.UpdateRegionsSwitches(animation_name_in);
+
         for(var i = cur_animation.start_time; i <= cur_animation.end_time; i++)
         {
             this.setRunTime(i);
             var new_pts = [];
             for (var j = 0; j < this.target_creature.total_num_pts * 3; j++) new_pts[j] = 0; 
             //auto new_pts = new glm::float32[target_creature->GetTotalNumPoints() * 3];
-            this.PoseCreature(animation_name_in, new_pts);
+            this.PoseCreature(animation_name_in, new_pts, this.getRunTime());
             
             cache_pts_list.push(new_pts);
         }
@@ -2624,7 +3732,7 @@ CreatureManager.prototype.FillSinglePointCacheFrame = function(animation_name_in
 	this.setRunTime(time_in);
     var new_pts = [];
     for (var j = 0; j < this.target_creature.total_num_pts * 3; j++) new_pts[j] = 0; 
-    this.PoseCreature(animation_name_in, new_pts);
+    this.PoseCreature(animation_name_in, new_pts, time_in);
     
     cur_animation.fill_cache_pts.push(new_pts);
     cur_animation.verifyFillCache();
@@ -2663,6 +3771,68 @@ CreatureManager.prototype.SetIsPlaying = function(flag_in)
 {
   this.is_playing = flag_in;
 };
+
+CreatureManager.prototype.ProcessAutoBlending = function()
+{
+	// process blending factor
+	this.blending_factor += this.auto_blend_delta;
+	if(this.blending_factor > 1)
+	{
+		this.blending_factor = 1;
+	}
+};
+
+CreatureManager.prototype.IncreAutoBlendRunTimes = function(delta_in)
+{
+	set_animation_name = "";
+	for(var j = 0; j < this.auto_blend_names.length; j++)
+	{
+		var cur_animation_name = this.auto_blend_names[j];				
+		if ((cur_animation_name in this.animations) 
+				&& (set_animation_name != cur_animation_name))
+		{
+			cur_run_time = this.active_blend_run_times[cur_animation_name];
+			cur_run_time += delta_in;
+			cur_run_time = this.correctRunTime(cur_run_time, cur_animation_name);
+
+			this.active_blend_run_times[cur_animation_name] = cur_run_time;
+					
+			set_animation_name = cur_animation_name;
+		}
+	}
+};
+
+CreatureManager.prototype.correctRunTime = function(time_in, animation_name)
+{
+	ret_time = time_in;
+	cur_animation = this.animations[animation_name];
+	anim_start_time = cur_animation.start_time;
+	anim_end_time = cur_animation.end_time;
+			
+	if (ret_time > anim_end_time)
+	{
+		if (this.should_loop)
+		{
+			ret_time = anim_start_time;
+		}
+		else {
+			ret_time = anim_end_time;
+		}
+	}
+	else if (ret_time < anim_start_time)
+	{
+		if (this.should_loop)
+		{
+			ret_time = anim_end_time;
+		}
+		else {
+			ret_time = anim_start_time;
+		}
+	}
+			
+	return ret_time;
+};
+
 
 // Resets animation to start time
 CreatureManager.prototype.ResetToStartTimes = function()
@@ -2725,6 +3895,69 @@ CreatureManager.prototype.getRunTime = function()
   return this.run_time;
 };
 
+// Returns the true run time taking into account of blending
+CreatureManager.prototype.getActualRuntime = function()
+{
+  if (this.do_auto_blending)
+  {
+      if (this.active_animation_name in this.active_blend_run_times)
+      {
+          return this.active_blend_run_times[this.active_animation_name];
+      }
+  }
+
+  return this.run_time;
+};
+
+CreatureManager.prototype.checkAnimationBlendValid = function()
+{
+  for(var i = 0; i < 2; i++)
+  {
+    cur_animation_name = this.active_blend_animation_names[i];
+    if(!(cur_animation_name in this.animations) ||
+      !(cur_animation_name in this.active_blend_run_times))
+    {
+      return false;      
+    }
+  }
+
+  return true;
+};
+
+CreatureManager.prototype.UpdateRegionsSwitches = function(animation_name_in)
+{
+  var cur_animation = this.animations[animation_name_in];
+
+  var displacement_cache_manager = cur_animation.displacement_cache;
+  var displacement_table =
+    displacement_cache_manager.displacement_cache_table[0];
+
+  var uv_warp_cache_manager = cur_animation.uv_warp_cache;
+  var uv_swap_table =
+    uv_warp_cache_manager.uv_cache_table[0];
+
+  var render_composition =
+    this.target_creature.render_composition;
+
+  var all_regions = render_composition.getRegions();
+
+  var index = 0;
+  for(var i = 0; i < all_regions.length; i++)
+  {
+  	var cur_region = all_regions[i];
+    // Setup active or inactive displacements
+    var use_local_displacements = !(displacement_table[index].getLocalDisplacements().length == 0);
+    var use_post_displacements = !(displacement_table[index].getPostDisplacements().length == 0);
+    cur_region.setUseLocalDisplacements(use_local_displacements);
+    cur_region.setUsePostDisplacements(use_post_displacements);
+
+    // Setup active or inactive uv swaps
+    cur_region.setUseUvWarp(uv_swap_table[index].getEnabled());
+
+    index++;
+  }
+};
+
 // Runs a single step of the animation for a given delta timestep
 CreatureManager.prototype.Update = function(delta)
 {
@@ -2734,8 +3967,13 @@ CreatureManager.prototype.Update = function(delta)
   }
 
   this.increRunTime(delta * this.time_scale);
+  
+  if(this.do_auto_blending) {
+  	this.ProcessAutoBlending();
+  	this.IncreAutoBlendRunTimes(delta * this.time_scale);
+  }
 
-  this.RunCreature ();
+  this.RunCreature();
 };
 
 CreatureManager.prototype.RunAtTime = function(time_in)
@@ -2754,14 +3992,19 @@ CreatureManager.prototype.RunCreature = function()
   if(this.do_blending)
   {
     for(var i = 0; i < 2; i++) {
+      cur_animation_name = this.active_blend_animation_names[i];
       var cur_animation = this.animations[this.active_blend_animation_names[i]];
+      cur_animation_run_time = this.active_blend_run_times[cur_animation_name];
+
       if(cur_animation.cache_pts.length > 0)
       {
-      	cur_animation.poseFromCachePts(this.getRunTime(), this.blend_render_pts[i], this.target_creature.total_num_pts);
+        this.UpdateRegionsSwitches(cur_animation_name);
+      	cur_animation.poseFromCachePts(cur_animation_run_time, this.blend_render_pts[i], this.target_creature.total_num_pts);
       }
       else {
-	  	this.PoseCreature(this.active_blend_animation_names[i], this.blend_render_pts[i]);
-	  }
+        this.UpdateRegionsSwitches(cur_animation_name);
+	    	this.PoseCreature(this.active_blend_animation_names[i], this.blend_render_pts[i], cur_animation_run_time);
+  	  }
     }
 
     for(var j = 0; j < this.target_creature.total_num_pts * 3; j++)
@@ -2774,9 +4017,9 @@ CreatureManager.prototype.RunCreature = function()
          ((1.0f - blending_factor) * (read_data_1)) +
          (blending_factor * (read_data_2));
        */
-      this.target_creature.render_pts.set(set_data_index,
-          ((1.0 - blending_factor) * (read_data_1)) +
-          (blending_factor * (read_data_2)));
+      this.target_creature.render_pts[set_data_index] =
+          ((1.0 - this.blending_factor) * (read_data_1)) +
+          (this.blending_factor * (read_data_2));
 
     }
   }
@@ -2788,9 +4031,80 @@ CreatureManager.prototype.RunCreature = function()
     	// cur_animation->poseFromCachePts(getRunTime(), target_creature->GetRenderPts(), target_creature->GetTotalNumPoints());
     }
     else {
-		this.PoseCreature(this.active_animation_name, this.target_creature.render_pts);
-	}
+		  this.PoseCreature(this.active_animation_name, this.target_creature.render_pts, this.getRunTime());
+	  }
   }
+  
+  this.RunUVItemSwap();
+};
+
+function isDictEmpty(ob){
+   for(var i in ob){ return false;}
+  return true;
+}
+
+
+CreatureManager.prototype.RunUVItemSwap = function()
+{
+	var render_composition =
+    	this.target_creature.render_composition;
+	var regions_map =
+	    render_composition.getRegionsMap();
+	
+	var swap_packets = this.target_creature.uv_swap_packets;
+	var active_swap_actions = this.target_creature.active_uv_swap_actions;
+
+	if (isDictEmpty(swap_packets) || isDictEmpty(active_swap_actions))
+	{
+		return;
+	}
+
+	for(var cur_action_key in active_swap_actions)
+	{
+		if (cur_action_key in regions_map)
+		{
+			var swap_tag = active_swap_actions[cur_action_key];
+			var swap_list = swap_packets[cur_action_key];
+			for(var j = 0; j < swap_list.length; j++)
+			{
+				var cur_item = swap_list[j];
+				
+				if (cur_item.tag == swap_tag)
+				{
+					// Perfrom UV Item Swap
+					var cur_region = regions_map[cur_action_key];
+					cur_region.setUvWarpLocalOffset(cur_item.local_offset);
+					cur_region.setUvWarpGlobalOffset(cur_item.global_offset);
+					cur_region.setUvWarpScale(cur_item.scale);
+					cur_region.runUvWarp();
+
+					break;
+				}
+			}
+		}
+	}
+};
+
+CreatureManager.prototype.AlterBonesByAnchor = function(bones_map, animation_name_in)
+{
+	if(this.target_creature.anchor_points_active == false)
+	{
+		return;
+	}
+	
+	var anchor_point = this.target_creature.GetAnchorPoint(animation_name_in);
+	for(var cur_bone_key in bones_map)
+	{
+		var cur_bone = bones_map[cur_bone_key];
+		var start_pt = cur_bone.getWorldStartPt();
+		var end_pt = cur_bone.getWorldEndPt();
+		
+		start_pt = vec3.subtract(start_pt, start_pt, vec3.fromValues(anchor_point[0], anchor_point[1], 0));
+		end_pt = vec3.subtract(end_pt, end_pt, vec3.fromValues(anchor_point[0], anchor_point[1], 0));
+		
+		cur_bone.setWorldStartPt(start_pt);
+		cur_bone.setWorldEndPt(end_pt);
+	}
 };
 
 // Sets scaling for time
@@ -2807,12 +4121,12 @@ CreatureManager.prototype.SetBlending = function(flag_in)
   if (this.do_blending) {
     if (this.blend_render_pts[0].length == 0) {
       var new_vec = [];
-      for(var i = 0; i < target_creature.total_num_pts * 3; i++)
+      for(var i = 0; i < this.target_creature.total_num_pts * 3; i++)
       {
         new_vec.push(0);
       }
 
-      this.blend_render_pts.set(0, new_vec);
+      this.blend_render_pts.push(new_vec);
     }
 
     if (this.blend_render_pts[1].length == 0) {
@@ -2826,6 +4140,45 @@ CreatureManager.prototype.SetBlending = function(flag_in)
     }
 
   }
+};
+
+// Sets auto blending
+CreatureManager.prototype.SetAutoBlending = function(flag_in)
+{
+	this.do_auto_blending = flag_in;
+	this.SetBlending(flag_in);
+			
+	if(this.do_auto_blending)
+	{
+		this.AutoBlendTo(this.active_animation_name, 0.1);
+	}	
+};
+
+// Use auto blending to blend to the next animation
+CreatureManager.prototype.AutoBlendTo = function(animation_name_in, blend_delta)
+{
+	if(animation_name_in == this.auto_blend_names[1])
+	{
+		// already blending to that so just return
+		return;
+	}
+			
+	this.ResetBlendTime(animation_name_in);
+			
+	this.auto_blend_delta = blend_delta;
+	this.auto_blend_names[0] = this.active_animation_name;
+	this.auto_blend_names[1] = animation_name_in;
+	this.blending_factor = 0;
+			
+	this.active_animation_name = animation_name_in;
+			
+	this.SetBlendingAnimations(this.auto_blend_names[0], this.auto_blend_names[1]);
+};
+
+CreatureManager.prototype.ResetBlendTime = function(name_in)
+{
+	cur_animation = this.animations[name_in];
+	this.active_blend_run_times[name_in] = cur_animation.start_time;
 };
 
 // Sets blending animation names
@@ -2850,13 +4203,14 @@ CreatureManager.prototype.IsContactBone = function(pt_in, radius)
 };
 
 
-CreatureManager.prototype.PoseCreature = function(animation_name_in, target_pts)
+CreatureManager.prototype.PoseCreature = function(animation_name_in, target_pts, input_run_time)
 {
   var cur_animation = this.animations[animation_name_in];
 
   var bone_cache_manager = cur_animation.bones_cache;
   var displacement_cache_manager = cur_animation.displacement_cache;
   var uv_warp_cache_manager = cur_animation.uv_warp_cache;
+  var opacity_cache_manager = cur_animation.opacity_cache;
 
   var render_composition =
     this.target_creature.render_composition;
@@ -2867,19 +4221,22 @@ CreatureManager.prototype.PoseCreature = function(animation_name_in, target_pts)
   var regions_map =
     render_composition.getRegionsMap();
 
-  bone_cache_manager.retrieveValuesAtTime(this.getRunTime(),
+  bone_cache_manager.retrieveValuesAtTime(input_run_time,
       bones_map);
+      
+  this.AlterBonesByAnchor(bones_map, animation_name_in);
       
   if(this.bones_override_callback != null)
   {
   	this.bones_override_callback(bones_map);
   }
 
-  displacement_cache_manager.retrieveValuesAtTime(this.getRunTime(),
+  displacement_cache_manager.retrieveValuesAtTime(input_run_time,
       regions_map);
-  uv_warp_cache_manager.retrieveValuesAtTime(this.getRunTime(),
+  uv_warp_cache_manager.retrieveValuesAtTime(input_run_time,
       regions_map);
-
+  opacity_cache_manager.retrieveValuesAtTime(input_run_time,
+			                                 regions_map);
 
   // Do posing, decide if we are blending or not
   var cur_regions =
@@ -2911,4 +4268,3 @@ CreatureManager.prototype.PoseCreature = function(animation_name_in, target_pts)
      
   }
 };
-

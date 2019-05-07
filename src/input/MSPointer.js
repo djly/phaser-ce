@@ -5,22 +5,39 @@
 */
 
 /**
-* The MSPointer class handles Microsoft touch interactions with the game and the resulting Pointer objects.
+* The MSPointer class handles pointer interactions with the game via the {@link https://developers.google.com/web/updates/2016/10/pointer-events Pointer Events API}. (It's named after the nonstandard {@link https://msdn.microsoft.com/library/hh673557(v=vs.85).aspx MSPointerEvent}, ancestor of the current API.)
 *
-* It will work only in Internet Explorer 10+ and Windows Store or Windows Phone 8 apps using JavaScript.
-* http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx
+* It's {@link http://caniuse.com/#feat=pointer currently supported  in IE 10+, Edge, Chrome (including Android), and Opera}.
 *
-* You should not normally access this class directly, but instead use a Phaser.Pointer object which 
+* You should not normally access this class directly, but instead use a {@link Phaser.Pointer} object which
 * normalises all game input for you including accurate button handling.
 *
-* Please note that at the current time of writing Phaser does not yet support chorded button interactions:
-* http://www.w3.org/TR/pointerevents/#chorded-button-interactions
+* Phaser does not yet support {@link http://www.w3.org/TR/pointerevents/#chorded-button-interactions chorded button interactions}.
+*
+* You can disable Phaser's use of Pointer Events by any of three ways:
+*
+* ```javascript
+* new Phaser.Game({ mspointer: false });
+* ```
+*
+* ```javascript
+* // **Before** `new Phaser.Game(…)`:
+* Phaser.Device.onInitialized.add(function () {
+*     this.mspointer = false;
+* });
+* ```
+*
+* ```javascript
+* // Once, in the earliest State `init` or `create` callback (e.g., Boot):
+* this.input.mspointer.stop();
+* ```
 *
 * @class Phaser.MSPointer
 * @constructor
 * @param {Phaser.Game} game - A reference to the currently running game.
 */
-Phaser.MSPointer = function (game) {
+Phaser.MSPointer = function (game)
+{
 
     /**
     * @property {Phaser.Game} game - A reference to the currently running game.
@@ -39,43 +56,54 @@ Phaser.MSPointer = function (game) {
     this.callbackContext = this.game;
 
     /**
-    * @property {function} pointerDownCallback - A callback that can be fired on a MSPointerDown event.
+    * @property {function} pointerDownCallback - A callback that can be fired on a pointerdown (MSPointerDown) event.
     */
     this.pointerDownCallback = null;
 
     /**
-    * @property {function} pointerMoveCallback - A callback that can be fired on a MSPointerMove event.
+    * @property {function} pointerMoveCallback - A callback that can be fired on a pointermove (MSPointerMove) event.
     */
     this.pointerMoveCallback = null;
 
     /**
-    * @property {function} pointerUpCallback - A callback that can be fired on a MSPointerUp event.
+    * @property {function} pointerUpCallback - A callback that can be fired on a pointerup (MSPointerUp) event.
     */
     this.pointerUpCallback = null;
 
     /**
-    * @property {boolean} capture - If true the Pointer events will have event.preventDefault applied to them, if false they will propagate fully.
+    * If true the PointerEvent will call preventDefault(), canceling the corresponding MouseEvent or
+    * TouchEvent.
+    *
+    * If the {@link Phaser.Mouse Mouse} handler is active as well, you should set this to true to avoid
+    * duplicate events.
+    *
+    * "Mouse events can only be prevented when the pointer is down. Hovering pointers (e.g. a mouse with
+    * no buttons pressed) cannot have their mouse events prevented. And, the `mouseover` and `mouseout`
+    * events are never prevented (even if the pointer is down)."
+    *
+    * @property {boolean} capture
+    * @see https://www.w3.org/Submission/pointer-events/#mapping-for-devices-that-support-hover
     */
-    this.capture = true;
+    this.capture = false;
 
     /**
-    * This property was removed in Phaser 2.4 and should no longer be used.
-    * Instead please see the Pointer button properties such as `Pointer.leftButton`, `Pointer.rightButton` and so on.
-    * Or Pointer.button holds the DOM event button value if you require that.
-    * @property {number} button
-    */
-    this.button = -1;
-
-    /**
-    * The browser MSPointer DOM event. Will be null if no event has ever been received.
+    * The most recent PointerEvent from the browser. Will be null if no event has ever been received.
     * Access this property only inside a Pointer event handler and do not keep references to it.
-    * @property {MSPointerEvent|null} event
+    * @property {MSPointerEvent|PointerEvent|null} event
     * @default
     */
     this.event = null;
 
     /**
-    * MSPointer input will only be processed if enabled.
+    * Whether the input handler is active.
+    * @property {boolean} active
+    * @readOnly
+    * @default
+    */
+    this.active = false;
+
+    /**
+    * PointerEvent input will only be processed if enabled.
     * @property {boolean} enabled
     * @default
     */
@@ -125,78 +153,94 @@ Phaser.MSPointer.prototype = {
     * Starts the event listeners running.
     * @method Phaser.MSPointer#start
     */
-    start: function () {
+    start: function ()
+    {
+
+        if (!this.game.device.mspointer)
+        {
+            return false;
+        }
 
         if (this._onMSPointerDown !== null)
         {
             //  Avoid setting multiple listeners
-            return;
+            return false;
         }
 
         var _this = this;
 
-        if (this.game.device.mspointer)
+        this._onMSPointerDown = function (event)
         {
-            this._onMSPointerDown = function (event) {
-                return _this.onPointerDown(event);
-            };
+            return _this.onPointerDown(event);
+        };
 
-            this._onMSPointerMove = function (event) {
-                return _this.onPointerMove(event);
-            };
+        this._onMSPointerMove = function (event)
+        {
+            return _this.onPointerMove(event);
+        };
 
-            this._onMSPointerUp = function (event) {
-                return _this.onPointerUp(event);
-            };
+        this._onMSPointerUp = function (event)
+        {
+            return _this.onPointerUp(event);
+        };
 
-            this._onMSPointerUpGlobal = function (event) {
-                return _this.onPointerUpGlobal(event);
-            };
+        this._onMSPointerUpGlobal = function (event)
+        {
+            return _this.onPointerUpGlobal(event);
+        };
 
-            this._onMSPointerOut = function (event) {
-                return _this.onPointerOut(event);
-            };
+        this._onMSPointerOut = function (event)
+        {
+            return _this.onPointerOut(event);
+        };
 
-            this._onMSPointerOver = function (event) {
-                return _this.onPointerOver(event);
-            };
+        this._onMSPointerOver = function (event)
+        {
+            return _this.onPointerOver(event);
+        };
 
-            var canvas = this.game.canvas;
+        var canvas = this.game.canvas;
 
-            canvas.addEventListener('MSPointerDown', this._onMSPointerDown, false);
-            canvas.addEventListener('MSPointerMove', this._onMSPointerMove, false);
-            canvas.addEventListener('MSPointerUp', this._onMSPointerUp, false);
+        canvas.addEventListener('MSPointerDown', this._onMSPointerDown, false);
+        canvas.addEventListener('MSPointerMove', this._onMSPointerMove, false);
+        canvas.addEventListener('MSPointerUp', this._onMSPointerUp, false);
+
+        //  IE11+ uses non-prefix events
+        canvas.addEventListener('pointerdown', this._onMSPointerDown, false);
+        canvas.addEventListener('pointermove', this._onMSPointerMove, false);
+        canvas.addEventListener('pointerup', this._onMSPointerUp, false);
+
+        canvas.style['-ms-content-zooming'] = 'none';
+        canvas.style['-ms-touch-action'] = 'none';
+
+        if (!this.game.device.cocoonJS)
+        {
+            window.addEventListener('MSPointerUp', this._onMSPointerUpGlobal, true);
+            canvas.addEventListener('MSPointerOver', this._onMSPointerOver, true);
+            canvas.addEventListener('MSPointerOut', this._onMSPointerOut, true);
 
             //  IE11+ uses non-prefix events
-            canvas.addEventListener('pointerdown', this._onMSPointerDown, false);
-            canvas.addEventListener('pointermove', this._onMSPointerMove, false);
-            canvas.addEventListener('pointerup', this._onMSPointerUp, false);
-
-            canvas.style['-ms-content-zooming'] = 'none';
-            canvas.style['-ms-touch-action'] = 'none';
-
-            if (!this.game.device.cocoonJS)
-            {
-                window.addEventListener('MSPointerUp', this._onMSPointerUpGlobal, true);
-                canvas.addEventListener('MSPointerOver', this._onMSPointerOver, true);
-                canvas.addEventListener('MSPointerOut', this._onMSPointerOut, true);
-
-                //  IE11+ uses non-prefix events
-                window.addEventListener('pointerup', this._onMSPointerUpGlobal, true);
-                canvas.addEventListener('pointerover', this._onMSPointerOver, true);
-                canvas.addEventListener('pointerout', this._onMSPointerOut, true);
-            }
+            window.addEventListener('pointerup', this._onMSPointerUpGlobal, true);
+            canvas.addEventListener('pointerover', this._onMSPointerOver, true);
+            canvas.addEventListener('pointerout', this._onMSPointerOut, true);
         }
+
+        this.active = true;
+
+        return true;
 
     },
 
     /**
     * The function that handles the PointerDown event.
-    * 
+    *
     * @method Phaser.MSPointer#onPointerDown
     * @param {PointerEvent} event - The native DOM event.
     */
-    onPointerDown: function (event) {
+    onPointerDown: function (event)
+    {
+
+        this.game.input.executeTouchLockCallbacks(false, event);
 
         this.event = event;
 
@@ -233,7 +277,8 @@ Phaser.MSPointer.prototype = {
     * @method Phaser.MSPointer#onPointerMove
     * @param {PointerEvent} event - The native DOM event.
     */
-    onPointerMove: function (event) {
+    onPointerMove: function (event)
+    {
 
         this.event = event;
 
@@ -270,7 +315,10 @@ Phaser.MSPointer.prototype = {
     * @method Phaser.MSPointer#onPointerUp
     * @param {PointerEvent} event - The native DOM event.
     */
-    onPointerUp: function (event) {
+    onPointerUp: function (event)
+    {
+
+        this.game.input.executeTouchLockCallbacks(true, event);
 
         this.event = event;
 
@@ -304,11 +352,14 @@ Phaser.MSPointer.prototype = {
 
     /**
     * The internal method that handles the mouse up event from the window.
-    * 
+    *
     * @method Phaser.MSPointer#onPointerUpGlobal
     * @param {PointerEvent} event - The native event from the browser. This gets stored in MSPointer.event.
     */
-    onPointerUpGlobal: function (event) {
+    onPointerUpGlobal: function (event)
+    {
+
+        event.identifier = event.pointerId;
 
         if ((event.pointerType === 'mouse' || event.pointerType === 0x00000004) && !this.input.mousePointer.withinGame)
         {
@@ -332,7 +383,8 @@ Phaser.MSPointer.prototype = {
     * @method Phaser.MSPointer#onPointerOut
     * @param {PointerEvent} event - The native event from the browser. This gets stored in MSPointer.event.
     */
-    onPointerOut: function (event) {
+    onPointerOut: function (event)
+    {
 
         this.event = event;
 
@@ -340,6 +392,8 @@ Phaser.MSPointer.prototype = {
         {
             event.preventDefault();
         }
+
+        event.identifier = event.pointerId;
 
         if (event.pointerType === 'mouse' || event.pointerType === 0x00000004)
         {
@@ -367,7 +421,7 @@ Phaser.MSPointer.prototype = {
 
         if (this.input.mouse.stopOnGameOut)
         {
-            event['identifier'] = 0;
+            event.identifier = 0;
 
             if (pointer)
             {
@@ -382,12 +436,13 @@ Phaser.MSPointer.prototype = {
     },
 
     /**
-    * The internal method that handles the pointer out event from the browser.
+    * The internal method that handles the pointer over event from the browser.
     *
     * @method Phaser.MSPointer#onPointerOut
     * @param {PointerEvent} event - The native event from the browser. This gets stored in MSPointer.event.
     */
-    onPointerOver: function (event) {
+    onPointerOver: function (event)
+    {
 
         this.event = event;
 
@@ -395,6 +450,8 @@ Phaser.MSPointer.prototype = {
         {
             event.preventDefault();
         }
+
+        event.identifier = event.pointerId;
 
         if (event.pointerType === 'mouse' || event.pointerType === 0x00000004)
         {
@@ -421,7 +478,8 @@ Phaser.MSPointer.prototype = {
     * Stop the event listeners.
     * @method Phaser.MSPointer#stop
     */
-    stop: function () {
+    stop: function ()
+    {
 
         var canvas = this.game.canvas;
 
@@ -442,6 +500,8 @@ Phaser.MSPointer.prototype = {
         window.removeEventListener('pointerup', this._onMSPointerUpGlobal, true);
         canvas.removeEventListener('pointerover', this._onMSPointerOver, true);
         canvas.removeEventListener('pointerout', this._onMSPointerOut, true);
+
+        this.active = false;
 
     }
 

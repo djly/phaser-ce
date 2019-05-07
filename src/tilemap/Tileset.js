@@ -19,7 +19,8 @@
 * @param {integer} [spacing=0] - The spacing between each tile in the sheet (in pixels).
 * @param {object} [properties={}] - Custom Tileset properties.
 */
-Phaser.Tileset = function (name, firstgid, width, height, margin, spacing, properties) {
+Phaser.Tileset = function (name, firstgid, width, height, margin, spacing, properties)
+{
 
     if (width === undefined || width <= 0) { width = 32; }
     if (height === undefined || height <= 0) { height = 32; }
@@ -130,7 +131,8 @@ Phaser.Tileset.prototype = {
     * @param {number} y - The y coordinate to draw to.
     * @param {integer} index - The index of the tile within the set to draw.
     */
-    draw: function (context, x, y, index) {
+    draw: function (context, x, y, index)
+    {
 
         //  Correct the tile index for the set and bias for interlacing
         var coordIndex = (index - this.firstgid) << 1;
@@ -157,9 +159,11 @@ Phaser.Tileset.prototype = {
     *
     * @method Phaser.Tileset#containsTileIndex
     * @public
+    * @param {number} tileIndex
     * @return {boolean} True if this tileset contains the given index.
     */
-    containsTileIndex: function (tileIndex) {
+    containsTileIndex: function (tileIndex)
+    {
 
         return (
             tileIndex >= this.firstgid &&
@@ -175,11 +179,12 @@ Phaser.Tileset.prototype = {
     * @public
     * @param {Image} image - The image that contains the tiles.
     */
-    setImage: function (image) {
+    setImage: function (image)
+    {
 
         this.image = image;
         this.updateTileData(image.width, image.height);
-       
+
     },
 
     /**
@@ -190,7 +195,8 @@ Phaser.Tileset.prototype = {
     * @param {integer} [margin=0] - The margin around the tiles in the sheet (in pixels).
     * @param {integer} [spacing=0] - The spacing between the tiles in the sheet (in pixels).
     */
-    setSpacing: function (margin, spacing) {
+    setSpacing: function (margin, spacing)
+    {
 
         this.tileMargin = margin | 0;
         this.tileSpacing = spacing | 0;
@@ -210,7 +216,8 @@ Phaser.Tileset.prototype = {
     * @param {integer} imageWidth - The (expected) width of the image to slice.
     * @param {integer} imageHeight - The (expected) height of the image to slice.
     */
-    updateTileData: function (imageWidth, imageHeight) {
+    updateTileData: function (imageWidth, imageHeight)
+    {
 
         // May be fractional values
         var rowCount = (imageHeight - this.tileMargin * 2 + this.tileSpacing) / (this.tileHeight + this.tileSpacing);
@@ -218,7 +225,10 @@ Phaser.Tileset.prototype = {
 
         if (rowCount % 1 !== 0 || colCount % 1 !== 0)
         {
-            console.warn("Phaser.Tileset - " + this.name + " image tile area is not an even multiple of tile size");
+            console.warn(
+                'Phaser.Tileset - \'%s\' image tile area (%s x %s) is not a whole multiple of tile size (%s x %s + %s + %s)',
+                this.name, imageWidth, imageHeight, this.tileWidth, this.tileHeight, this.tileMargin, this.tileSpacing
+            );
         }
 
         // In Tiled a tileset image that is not an even multiple of the tile dimensions
@@ -228,7 +238,10 @@ Phaser.Tileset.prototype = {
 
         if ((this.rows && this.rows !== rowCount) || (this.columns && this.columns !== colCount))
         {
-            console.warn("Phaser.Tileset - actual and expected number of tile rows and columns differ");
+            console.warn(
+                'Phaser.Tileset - Tile layout from image \'%s\' (%s rows by %s columns) differs from tileset \'%s\' (%s rows by %s columns)',
+                this.image.name, colCount, rowCount, this.name, this.columns, this.rows
+            );
         }
 
         this.rows = rowCount;

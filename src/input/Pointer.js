@@ -11,9 +11,10 @@
 * @constructor
 * @param {Phaser.Game} game - A reference to the currently running game.
 * @param {number} id - The ID of the Pointer object within the game. Each game can have up to 10 active pointers.
-* @param {Phaser.PointerMode} pointerMode=(CURSOR|CONTACT) - The operational mode of this pointer, eg. CURSOR or TOUCH.
+* @param {Phaser.PointerMode} pointerMode=(CURSOR|CONTACT) - The operational mode of this pointer, eg. CURSOR or CONTACT.
 */
-Phaser.Pointer = function (game, id, pointerMode) {
+Phaser.Pointer = function (game, id, pointerMode)
+{
 
     /**
     * @property {Phaser.Game} game - A reference to the currently running game.
@@ -206,25 +207,27 @@ Phaser.Pointer = function (game, id, pointerMode) {
     this.screenY = -1;
 
     /**
-    * @property {number} rawMovementX - The horizontal raw relative movement of the Pointer in pixels since last event.
+    * @property {number} rawMovementX - The horizontal raw relative movement of the Pointer in pixels at the last event, if this is a Mouse Pointer in a locked state.
     * @default
+    * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/movementX
     */
     this.rawMovementX = 0;
 
     /**
-    * @property {number} rawMovementY - The vertical raw relative movement of the Pointer in pixels since last event.
+    * @property {number} rawMovementY - The vertical raw relative movement of the Pointer in pixels at the last event, if this is a Mouse Pointer in a locked state.
     * @default
+    * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/movementY
     */
     this.rawMovementY = 0;
 
     /**
-    * @property {number} movementX - The horizontal processed relative movement of the Pointer in pixels since last event.
+    * @property {number} movementX - The cumulative horizontal relative movement of the Pointer in pixels since resetMovement() was called, if this is a Mouse Pointer in a locked state.
     * @default
     */
     this.movementX = 0;
 
     /**
-    * @property {number} movementY - The vertical processed relative movement of the Pointer in pixels since last event.
+    * @property {number} movementY - The cumulative vertical relative movement of the Pointer in pixels since resetMovement() was called, if this is a Mouse Pointer in a locked state..
     * @default
     */
     this.movementY = 0;
@@ -419,7 +422,8 @@ Phaser.Pointer.prototype = {
     * @method Phaser.Pointer#resetButtons
     * @protected
     */
-    resetButtons: function () {
+    resetButtons: function ()
+    {
 
         this.isDown = false;
         this.isUp = true;
@@ -437,45 +441,73 @@ Phaser.Pointer.prototype = {
     },
 
     /**
-    * Called by updateButtons.
+    * Called by processButtonsUpDown.
     *
     * @method Phaser.Pointer#processButtonsDown
     * @private
-    * @param {integer} buttons - The DOM event.buttons property.
+    * @param {integer} button - {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button MouseEvent#button} value.
     * @param {MouseEvent} event - The DOM event.
     */
-    processButtonsDown: function (buttons, event) {
+    processButtonsDown: function (button, event)
+    {
 
-        //  Note: These are bitwise checks, not booleans
-
-        if (Phaser.Pointer.LEFT_BUTTON & buttons)
+        switch (button)
         {
-            this.leftButton.start(event);
+            case (Phaser.Mouse.LEFT_BUTTON):
+                this.leftButton.start(event);
+                break;
+
+            case (Phaser.Mouse.RIGHT_BUTTON):
+                this.rightButton.start(event);
+                break;
+
+            case (Phaser.Mouse.MIDDLE_BUTTON):
+                this.middleButton.start(event);
+                break;
+
+            case (Phaser.Mouse.BACK_BUTTON):
+                this.backButton.start(event);
+                break;
+
+            case (Phaser.Mouse.FORWARD_BUTTON):
+                this.forwardButton.start(event);
+                break;
         }
 
-        if (Phaser.Pointer.RIGHT_BUTTON & buttons)
-        {
-            this.rightButton.start(event);
-        }
+    },
 
-        if (Phaser.Pointer.MIDDLE_BUTTON & buttons)
-        {
-            this.middleButton.start(event);
-        }
+    /**
+    * Called by processButtonsUpDown.
+    *
+    * @method Phaser.Pointer#processButtonsUp
+    * @private
+    * @param {integer} button - {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button MouseEvent#button} value.
+    * @param {MouseEvent} event - The DOM event.
+    */
+    processButtonsUp: function (button, event)
+    {
 
-        if (Phaser.Pointer.BACK_BUTTON & buttons)
+        switch (button)
         {
-            this.backButton.start(event);
-        }
+            case (Phaser.Mouse.LEFT_BUTTON):
+                this.leftButton.stop(event);
+                break;
 
-        if (Phaser.Pointer.FORWARD_BUTTON & buttons)
-        {
-            this.forwardButton.start(event);
-        }
+            case (Phaser.Mouse.RIGHT_BUTTON):
+                this.rightButton.stop(event);
+                break;
 
-        if (Phaser.Pointer.ERASER_BUTTON & buttons)
-        {
-            this.eraserButton.start(event);
+            case (Phaser.Mouse.MIDDLE_BUTTON):
+                this.middleButton.stop(event);
+                break;
+
+            case (Phaser.Mouse.BACK_BUTTON):
+                this.backButton.stop(event);
+                break;
+
+            case (Phaser.Mouse.FORWARD_BUTTON):
+                this.forwardButton.stop(event);
+                break;
         }
 
     },
@@ -483,43 +515,73 @@ Phaser.Pointer.prototype = {
     /**
     * Called by updateButtons.
     *
-    * @method Phaser.Pointer#processButtonsUp
+    * @method Phaser.Pointer#processButtonsUpDown
     * @private
-    * @param {integer} buttons - The DOM event.buttons property.
+    * @param {integer} buttons - {@link https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons MouseEvent#buttons} value.
     * @param {MouseEvent} event - The DOM event.
     */
-    processButtonsUp: function (button, event) {
+    processButtonsUpDown: function (buttons, event)
+    {
 
-        //  Note: These are bitwise checks, not booleans
+        var type = event.type.toLowerCase().substr(-4);
+        var down = (type === 'down');
+        var move = (type === 'move');
 
-        if (button === Phaser.Mouse.LEFT_BUTTON)
+        if (buttons !== undefined)
         {
-            this.leftButton.stop(event);
+            // On OS X (and other devices with trackpads) you have to press CTRL + the pad to initiate a right-click event.
+            if (down && buttons === 1 && event.ctrlKey)
+            {
+                buttons = 2;
+            }
+
+            // Note: These are bitwise checks, not booleans
+            this.leftButton.startStop(Phaser.Pointer.LEFT_BUTTON & buttons, event);
+            this.rightButton.startStop(Phaser.Pointer.RIGHT_BUTTON & buttons, event);
+            this.middleButton.startStop(Phaser.Pointer.MIDDLE_BUTTON & buttons, event);
+            this.backButton.startStop(Phaser.Pointer.BACK_BUTTON & buttons, event);
+            this.forwardButton.startStop(Phaser.Pointer.FORWARD_BUTTON & buttons, event);
+            this.eraserButton.startStop(Phaser.Pointer.ERASER_BUTTON & buttons, event);
         }
-
-        if (button === Phaser.Mouse.RIGHT_BUTTON)
+        else
         {
-            this.rightButton.stop(event);
-        }
-
-        if (button === Phaser.Mouse.MIDDLE_BUTTON)
-        {
-            this.middleButton.stop(event);
-        }
-
-        if (button === Phaser.Mouse.BACK_BUTTON)
-        {
-            this.backButton.stop(event);
-        }
-
-        if (button === Phaser.Mouse.FORWARD_BUTTON)
-        {
-            this.forwardButton.stop(event);
-        }
-
-        if (button === 5)
-        {
-            this.eraserButton.stop(event);
+            // No buttons property (like Safari on OSX when using a trackpad)
+            // Attempt to use event.button property or fallback to default
+            if (event.button !== undefined)
+            {
+                // On OS X (and other devices with trackpads) you have to press CTRL + the pad to initiate a right-click event.
+                if (down && event.ctrlKey && event.button === 0)
+                {
+                    this.rightButton.start(event);
+                }
+                else
+                if (down)
+                {
+                    this.processButtonsDown(event.button, event);
+                }
+                else if (!move)
+                {
+                    this.processButtonsUp(event.button, event);
+                }
+            }
+            else
+            if (down)
+            {
+                // On OS X (and other devices with trackpads) you have to press CTRL + the pad to initiate a right-click event.
+                if (event.ctrlKey)
+                {
+                    this.rightButton.start(event);
+                }
+                else
+                {
+                    this.leftButton.start(event);
+                }
+            }
+            else
+            {
+                this.leftButton.stop(event);
+                this.rightButton.stop(event);
+            }
         }
 
     },
@@ -532,46 +594,11 @@ Phaser.Pointer.prototype = {
     * @protected
     * @param {MouseEvent} event - The DOM event.
     */
-    updateButtons: function (event) {
+    updateButtons: function (event)
+    {
 
         this.button = event.button;
-
-        var down = (event.type.toLowerCase().substr(-4) === 'down');
-
-        if (event.buttons !== undefined)
-        {
-            if (down)
-            {
-                this.processButtonsDown(event.buttons, event);
-            }
-            else
-            {
-                this.processButtonsUp(event.button, event);
-            }
-        }
-        else
-        {
-            //  No buttons property (like Safari on OSX when using a trackpad)
-            if (down)
-            {
-                this.leftButton.start(event);
-            }
-            else
-            {
-                this.leftButton.stop(event);
-                this.rightButton.stop(event);
-            }
-        }
-
-        //  On OS X (and other devices with trackpads) you have to press CTRL + the pad
-        //  to initiate a right-click event, so we'll check for that here ONLY if
-        //  event.buttons = 1 (i.e. they only have a 1 button mouse or trackpad)
-
-        if (event.buttons === 1 && event.ctrlKey && this.leftButton.isDown)
-        {
-            this.leftButton.stop(event);
-            this.rightButton.start(event);
-        }
+        this.processButtonsUpDown(event.buttons, event);
 
         this.isUp = true;
         this.isDown = false;
@@ -589,11 +616,12 @@ Phaser.Pointer.prototype = {
     * @method Phaser.Pointer#start
     * @param {any} event - The DOM event from the browser.
     */
-    start: function (event) {
+    start: function (event)
+    {
 
         var input = this.game.input;
 
-        if (event['pointerId'])
+        if (event.pointerId)
         {
             this.pointerId = event.pointerId;
         }
@@ -658,7 +686,8 @@ Phaser.Pointer.prototype = {
     * Called by the Input Manager.
     * @method Phaser.Pointer#update
     */
-    update: function () {
+    update: function ()
+    {
 
         var input = this.game.input;
 
@@ -713,7 +742,8 @@ Phaser.Pointer.prototype = {
     * @param {MouseEvent|PointerEvent|TouchEvent} event - The event passed up from the input handler.
     * @param {boolean} [fromClick=false] - Was this called from the click event?
     */
-    move: function (event, fromClick) {
+    move: function (event, fromClick)
+    {
 
         var input = this.game.input;
 
@@ -729,7 +759,7 @@ Phaser.Pointer.prototype = {
             this.button = event.button;
         }
 
-        if (fromClick && this.isMouse)
+        if (this.isMouse)
         {
             this.updateButtons(event);
         }
@@ -777,7 +807,7 @@ Phaser.Pointer.prototype = {
 
         while (i--)
         {
-            input.moveCallbacks[i].callback.call(input.moveCallbacks[i].context, this, this.x, this.y, fromClick);
+            input.moveCallbacks[i].callback.call(input.moveCallbacks[i].context, this, this.x, this.y, fromClick, event);
         }
 
         //  Easy out if we're dragging something and it still exists
@@ -805,7 +835,8 @@ Phaser.Pointer.prototype = {
     * @param {boolean} [fromClick=false] - Was this called from the click event?
     * @return {boolean} True if this method processes an object (i.e. a Sprite becomes the Pointers currentTarget), otherwise false.
     */
-    processInteractiveObjects: function (fromClick) {
+    processInteractiveObjects: function (fromClick)
+    {
 
         //  Work out which object is on the top
         var highestRenderOrderID = 0;
@@ -889,7 +920,8 @@ Phaser.Pointer.prototype = {
     * @param {Phaser.InputHandler} newTarget - The new target for this Pointer. Note this is an `InputHandler`, so don't pass a Sprite, instead pass `sprite.input` to it.
     * @param {boolean} [silent=false] - If true the new target AND the old one will NOT dispatch their `onInputOver` or `onInputOut` events.
     */
-    swapTarget: function (newTarget, silent) {
+    swapTarget: function (newTarget, silent)
+    {
 
         if (silent === undefined) { silent = false; }
 
@@ -904,33 +936,31 @@ Phaser.Pointer.prototype = {
             }
         }
         else
+        if (this.targetObject === null)
         {
-            if (this.targetObject === null)
+            //  And now set the new one
+            this.targetObject = newTarget;
+            newTarget._pointerOverHandler(this, silent);
+        }
+        else
+        {
+            //  We've got a target from the last update
+            if (this.targetObject === newTarget)
             {
-                //  And now set the new one
-                this.targetObject = newTarget;
-                newTarget._pointerOverHandler(this, silent);
+                //  Same target as before, so update it
+                if (newTarget.update(this) === false)
+                {
+                    this.targetObject = null;
+                }
             }
             else
             {
-                //  We've got a target from the last update
-                if (this.targetObject === newTarget)
-                {
-                    //  Same target as before, so update it
-                    if (newTarget.update(this) === false)
-                    {
-                        this.targetObject = null;
-                    }
-                }
-                else
-                {
-                    //  The target has changed, so tell the old one we've left it
-                    this.targetObject._pointerOutHandler(this, silent);
+                //  The target has changed, so tell the old one we've left it
+                this.targetObject._pointerOutHandler(this, silent);
 
-                    //  And now set the new one
-                    this.targetObject = newTarget;
-                    this.targetObject._pointerOverHandler(this, silent);
-                }
+                //  And now set the new one
+                this.targetObject = newTarget;
+                this.targetObject._pointerOverHandler(this, silent);
             }
         }
 
@@ -942,7 +972,8 @@ Phaser.Pointer.prototype = {
     * @method Phaser.Pointer#leave
     * @param {MouseEvent|PointerEvent|TouchEvent} event - The event passed up from the input handler.
     */
-    leave: function (event) {
+    leave: function (event)
+    {
 
         this.withinGame = false;
         this.move(event, false);
@@ -955,7 +986,8 @@ Phaser.Pointer.prototype = {
     * @method Phaser.Pointer#stop
     * @param {MouseEvent|PointerEvent|TouchEvent} event - The event passed up from the input handler.
     */
-    stop: function (event) {
+    stop: function (event)
+    {
 
         var input = this.game.input;
 
@@ -977,16 +1009,9 @@ Phaser.Pointer.prototype = {
             if (this.duration >= 0 && this.duration <= input.tapRate)
             {
                 //  Was it a double-tap?
-                if (this.timeUp - this.previousTapTime < input.doubleTapRate)
-                {
-                    //  Yes, let's dispatch the signal then with the 2nd parameter set to true
-                    input.onTap.dispatch(this, true);
-                }
-                else
-                {
-                    //  Wasn't a double-tap, so dispatch a single tap signal
-                    input.onTap.dispatch(this, false);
-                }
+                var doubleTap = (this.timeUp - this.previousTapTime < input.doubleTapRate);
+
+                input.onTap.dispatch(this, doubleTap, event);
 
                 this.previousTapTime = this.timeUp;
             }
@@ -1040,7 +1065,8 @@ Phaser.Pointer.prototype = {
     * @param {number} [duration] - The time to check against. If none given it will use InputManager.justPressedRate.
     * @return {boolean} true if the Pointer was pressed down within the duration given.
     */
-    justPressed: function (duration) {
+    justPressed: function (duration)
+    {
 
         duration = duration || this.game.input.justPressedRate;
 
@@ -1056,7 +1082,8 @@ Phaser.Pointer.prototype = {
     * @param {number} [duration] - The time to check against. If none given it will use InputManager.justReleasedRate.
     * @return {boolean} true if the Pointer was released within the duration given.
     */
-    justReleased: function (duration) {
+    justReleased: function (duration)
+    {
 
         duration = duration || this.game.input.justReleasedRate;
 
@@ -1081,7 +1108,8 @@ Phaser.Pointer.prototype = {
     * @param {object} callbackContext - Context of the callback.
     * @param {object[]|null} callbackArgs - Additional callback args, if any. Supplied as an array.
     */
-    addClickTrampoline: function (name, callback, callbackContext, callbackArgs) {
+    addClickTrampoline: function (name, callback, callbackContext, callbackArgs)
+    {
 
         if (!this.isDown)
         {
@@ -1114,7 +1142,8 @@ Phaser.Pointer.prototype = {
     * @method Phaser.Pointer#processClickTrampolines
     * @private
     */
-    processClickTrampolines: function () {
+    processClickTrampolines: function ()
+    {
 
         var trampolines = this._clickTrampolines;
 
@@ -1142,7 +1171,8 @@ Phaser.Pointer.prototype = {
     * Resets the Pointer properties. Called by InputManager.reset when you perform a State change.
     * @method Phaser.Pointer#reset
     */
-    reset: function () {
+    reset: function ()
+    {
 
         if (this.isMouse === false)
         {
@@ -1172,7 +1202,8 @@ Phaser.Pointer.prototype = {
      * Resets the movementX and movementY properties. Use in your update handler after retrieving the values.
      * @method Phaser.Pointer#resetMovement
      */
-    resetMovement: function() {
+    resetMovement: function ()
+    {
 
         this.movementX = 0;
         this.movementY = 0;
@@ -1192,9 +1223,10 @@ Phaser.Pointer.prototype.constructor = Phaser.Pointer;
 * @property {number} duration
 * @readonly
 */
-Object.defineProperty(Phaser.Pointer.prototype, "duration", {
+Object.defineProperty(Phaser.Pointer.prototype, 'duration', {
 
-    get: function () {
+    get: function ()
+    {
 
         if (this.isUp)
         {
@@ -1213,9 +1245,10 @@ Object.defineProperty(Phaser.Pointer.prototype, "duration", {
 * @property {number} worldX - The X value of this Pointer in world coordinates based on the world camera.
 * @readonly
 */
-Object.defineProperty(Phaser.Pointer.prototype, "worldX", {
+Object.defineProperty(Phaser.Pointer.prototype, 'worldX', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.game.world.camera.x + this.x;
 
@@ -1229,9 +1262,10 @@ Object.defineProperty(Phaser.Pointer.prototype, "worldX", {
 * @property {number} worldY - The Y value of this Pointer in world coordinates based on the world camera.
 * @readonly
 */
-Object.defineProperty(Phaser.Pointer.prototype, "worldY", {
+Object.defineProperty(Phaser.Pointer.prototype, 'worldY', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.game.world.camera.y + this.y;
 
@@ -1267,3 +1301,9 @@ Phaser.PointerMode = {
     CONTACT: 1 << 1
 
 };
+
+Phaser.PointerModes = {};
+
+Phaser.PointerModes[Phaser.PointerMode.CURSOR] = 'CURSOR';
+
+Phaser.PointerModes[Phaser.PointerMode.CONTACT] = 'CONTACT';

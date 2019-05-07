@@ -12,12 +12,13 @@
 * The difference being that tweens belong to a games instance of TweenManager, rather than to a global TWEEN object.
 * It also has callbacks swapped for Signals and a few issues patched with regard to properties and completion errors.
 * Please see https://github.com/sole/tween.js for a full list of contributors.
-* 
+*
 * @class Phaser.TweenManager
 * @constructor
 * @param {Phaser.Game} game - A reference to the currently running game.
 */
-Phaser.TweenManager = function (game) {
+Phaser.TweenManager = function (game)
+{
 
     /**
     * @property {Phaser.Game} game - Local reference to game.
@@ -28,7 +29,7 @@ Phaser.TweenManager = function (game) {
     * Are all newly created Tweens frame or time based? A frame based tween will use the physics elapsed timer when updating. This means
     * it will retain the same consistent frame rate, regardless of the speed of the device. The duration value given should
     * be given in frames.
-    * 
+    *
     * If the Tween uses a time based update (which is the default) then the duration is given in milliseconds.
     * In this situation a 2000ms tween will last exactly 2 seconds, regardless of the device and how many visual updates the tween
     * has actually been through. For very short tweens you may wish to experiment with a frame based update instead.
@@ -51,56 +52,56 @@ Phaser.TweenManager = function (game) {
 
     this.easeMap = {
 
-        "Power0": Phaser.Easing.Power0,
-        "Power1": Phaser.Easing.Power1,
-        "Power2": Phaser.Easing.Power2,
-        "Power3": Phaser.Easing.Power3,
-        "Power4": Phaser.Easing.Power4,
+        Power0: Phaser.Easing.Power0,
+        Power1: Phaser.Easing.Power1,
+        Power2: Phaser.Easing.Power2,
+        Power3: Phaser.Easing.Power3,
+        Power4: Phaser.Easing.Power4,
 
-        "Linear": Phaser.Easing.Linear.None,
-        "Quad": Phaser.Easing.Quadratic.Out,
-        "Cubic": Phaser.Easing.Cubic.Out,
-        "Quart": Phaser.Easing.Quartic.Out,
-        "Quint": Phaser.Easing.Quintic.Out,
-        "Sine": Phaser.Easing.Sinusoidal.Out,
-        "Expo": Phaser.Easing.Exponential.Out,
-        "Circ": Phaser.Easing.Circular.Out,
-        "Elastic": Phaser.Easing.Elastic.Out,
-        "Back": Phaser.Easing.Back.Out,
-        "Bounce": Phaser.Easing.Bounce.Out,
+        Linear: Phaser.Easing.Linear.None,
+        Quad: Phaser.Easing.Quadratic.Out,
+        Cubic: Phaser.Easing.Cubic.Out,
+        Quart: Phaser.Easing.Quartic.Out,
+        Quint: Phaser.Easing.Quintic.Out,
+        Sine: Phaser.Easing.Sinusoidal.Out,
+        Expo: Phaser.Easing.Exponential.Out,
+        Circ: Phaser.Easing.Circular.Out,
+        Elastic: Phaser.Easing.Elastic.Out,
+        Back: Phaser.Easing.Back.Out,
+        Bounce: Phaser.Easing.Bounce.Out,
 
-        "Quad.easeIn": Phaser.Easing.Quadratic.In,
-        "Cubic.easeIn": Phaser.Easing.Cubic.In,
-        "Quart.easeIn": Phaser.Easing.Quartic.In,
-        "Quint.easeIn": Phaser.Easing.Quintic.In,
-        "Sine.easeIn": Phaser.Easing.Sinusoidal.In,
-        "Expo.easeIn": Phaser.Easing.Exponential.In,
-        "Circ.easeIn": Phaser.Easing.Circular.In,
-        "Elastic.easeIn": Phaser.Easing.Elastic.In,
-        "Back.easeIn": Phaser.Easing.Back.In,
-        "Bounce.easeIn": Phaser.Easing.Bounce.In,
+        'Quad.easeIn': Phaser.Easing.Quadratic.In,
+        'Cubic.easeIn': Phaser.Easing.Cubic.In,
+        'Quart.easeIn': Phaser.Easing.Quartic.In,
+        'Quint.easeIn': Phaser.Easing.Quintic.In,
+        'Sine.easeIn': Phaser.Easing.Sinusoidal.In,
+        'Expo.easeIn': Phaser.Easing.Exponential.In,
+        'Circ.easeIn': Phaser.Easing.Circular.In,
+        'Elastic.easeIn': Phaser.Easing.Elastic.In,
+        'Back.easeIn': Phaser.Easing.Back.In,
+        'Bounce.easeIn': Phaser.Easing.Bounce.In,
 
-        "Quad.easeOut": Phaser.Easing.Quadratic.Out,
-        "Cubic.easeOut": Phaser.Easing.Cubic.Out,
-        "Quart.easeOut": Phaser.Easing.Quartic.Out,
-        "Quint.easeOut": Phaser.Easing.Quintic.Out,
-        "Sine.easeOut": Phaser.Easing.Sinusoidal.Out,
-        "Expo.easeOut": Phaser.Easing.Exponential.Out,
-        "Circ.easeOut": Phaser.Easing.Circular.Out,
-        "Elastic.easeOut": Phaser.Easing.Elastic.Out,
-        "Back.easeOut": Phaser.Easing.Back.Out,
-        "Bounce.easeOut": Phaser.Easing.Bounce.Out,
+        'Quad.easeOut': Phaser.Easing.Quadratic.Out,
+        'Cubic.easeOut': Phaser.Easing.Cubic.Out,
+        'Quart.easeOut': Phaser.Easing.Quartic.Out,
+        'Quint.easeOut': Phaser.Easing.Quintic.Out,
+        'Sine.easeOut': Phaser.Easing.Sinusoidal.Out,
+        'Expo.easeOut': Phaser.Easing.Exponential.Out,
+        'Circ.easeOut': Phaser.Easing.Circular.Out,
+        'Elastic.easeOut': Phaser.Easing.Elastic.Out,
+        'Back.easeOut': Phaser.Easing.Back.Out,
+        'Bounce.easeOut': Phaser.Easing.Bounce.Out,
 
-        "Quad.easeInOut": Phaser.Easing.Quadratic.InOut,
-        "Cubic.easeInOut": Phaser.Easing.Cubic.InOut,
-        "Quart.easeInOut": Phaser.Easing.Quartic.InOut,
-        "Quint.easeInOut": Phaser.Easing.Quintic.InOut,
-        "Sine.easeInOut": Phaser.Easing.Sinusoidal.InOut,
-        "Expo.easeInOut": Phaser.Easing.Exponential.InOut,
-        "Circ.easeInOut": Phaser.Easing.Circular.InOut,
-        "Elastic.easeInOut": Phaser.Easing.Elastic.InOut,
-        "Back.easeInOut": Phaser.Easing.Back.InOut,
-        "Bounce.easeInOut": Phaser.Easing.Bounce.InOut
+        'Quad.easeInOut': Phaser.Easing.Quadratic.InOut,
+        'Cubic.easeInOut': Phaser.Easing.Cubic.InOut,
+        'Quart.easeInOut': Phaser.Easing.Quartic.InOut,
+        'Quint.easeInOut': Phaser.Easing.Quintic.InOut,
+        'Sine.easeInOut': Phaser.Easing.Sinusoidal.InOut,
+        'Expo.easeInOut': Phaser.Easing.Exponential.InOut,
+        'Circ.easeInOut': Phaser.Easing.Circular.InOut,
+        'Elastic.easeInOut': Phaser.Easing.Elastic.InOut,
+        'Back.easeInOut': Phaser.Easing.Back.InOut,
+        'Bounce.easeInOut': Phaser.Easing.Bounce.InOut
 
     };
 
@@ -116,7 +117,8 @@ Phaser.TweenManager.prototype = {
     * @method Phaser.TweenManager#getAll
     * @returns {Phaser.Tween[]} Array with all tween objects.
     */
-    getAll: function () {
+    getAll: function ()
+    {
 
         return this._tweens;
 
@@ -126,7 +128,8 @@ Phaser.TweenManager.prototype = {
     * Remove all tweens running and in the queue. Doesn't call any of the tween onComplete events.
     * @method Phaser.TweenManager#removeAll
     */
-    removeAll: function () {
+    removeAll: function ()
+    {
 
         for (var i = 0; i < this._tweens.length; i++)
         {
@@ -136,16 +139,17 @@ Phaser.TweenManager.prototype = {
         this._add = [];
 
     },
-    
+
     /**
     * Remove all tweens from a specific object, array of objects or Group.
-    * 
+    *
     * @method Phaser.TweenManager#removeFrom
     * @param {object|object[]|Phaser.Group} obj - The object you want to remove the tweens from.
     * @param {boolean} [children=true] - If passing a group, setting this to true will remove the tweens from all of its children instead of the group itself.
     */
-    removeFrom: function (obj, children) {
-        
+    removeFrom: function (obj, children)
+    {
+
         if (children === undefined) { children = true; }
 
         var i;
@@ -183,7 +187,7 @@ Phaser.TweenManager.prototype = {
                 }
             }
         }
-        
+
     },
 
     /**
@@ -193,7 +197,8 @@ Phaser.TweenManager.prototype = {
     * @param {Phaser.Tween} tween - The tween object you want to add.
     * @returns {Phaser.Tween} The tween object you added to the manager.
     */
-    add: function (tween) {
+    add: function (tween)
+    {
 
         tween._manager = this;
         this._add.push(tween);
@@ -207,7 +212,8 @@ Phaser.TweenManager.prototype = {
     * @param {object} object - Object the tween will be run on.
     * @returns {Phaser.Tween} The newly created tween object.
     */
-    create: function (object) {
+    create: function (object)
+    {
 
         return new Phaser.Tween(object, this.game, this);
 
@@ -219,7 +225,8 @@ Phaser.TweenManager.prototype = {
     * @method Phaser.TweenManager#remove
     * @param {Phaser.Tween} tween - The tween object you want to remove.
     */
-    remove: function (tween) {
+    remove: function (tween)
+    {
 
         var i = this._tweens.indexOf(tween);
 
@@ -245,7 +252,8 @@ Phaser.TweenManager.prototype = {
     * @method Phaser.TweenManager#update
     * @returns {boolean} Return false if there's no tween to update, otherwise return true.
     */
-    update: function () {
+    update: function ()
+    {
 
         var addTweens = this._add.length;
         var numTweens = this._tweens.length;
@@ -285,14 +293,21 @@ Phaser.TweenManager.prototype = {
     /**
     * Checks to see if a particular Sprite is currently being tweened.
     *
+    * The `checkIsRunning` parameter will exclude tweens that have **just** completed or been stopped but haven't yet been removed from the manager.
+    *
     * @method Phaser.TweenManager#isTweening
     * @param {object} object - The object to check for tweens against.
+    * @param {boolean} [checkIsRunning=false] - Also check that the tween is running and is not marked for deletion.
     * @returns {boolean} Returns true if the object is currently being tweened, false if not.
     */
-    isTweening: function(object) {
+    isTweening: function (object, checkIsRunning)
+    {
 
-        return this._tweens.some(function(tween) {
-            return tween.target === object;
+        if (!checkIsRunning) { checkIsRunning = false; }
+
+        return this._tweens.some(function (tween)
+        {
+            return (tween.target === object) && (!checkIsRunning || (tween.isRunning && !tween.pendingDelete));
         });
 
     },
@@ -303,7 +318,8 @@ Phaser.TweenManager.prototype = {
     * @method Phaser.TweenManager#_pauseAll
     * @private
     */
-    _pauseAll: function () {
+    _pauseAll: function ()
+    {
 
         for (var i = this._tweens.length - 1; i >= 0; i--)
         {
@@ -318,7 +334,8 @@ Phaser.TweenManager.prototype = {
     * @method Phaser.TweenManager#_resumeAll
     * @private
     */
-    _resumeAll: function () {
+    _resumeAll: function ()
+    {
 
         for (var i = this._tweens.length - 1; i >= 0; i--)
         {
@@ -332,7 +349,8 @@ Phaser.TweenManager.prototype = {
     *
     * @method Phaser.TweenManager#pauseAll
     */
-    pauseAll: function () {
+    pauseAll: function ()
+    {
 
         for (var i = this._tweens.length - 1; i >= 0; i--)
         {
@@ -346,12 +364,30 @@ Phaser.TweenManager.prototype = {
     *
     * @method Phaser.TweenManager#resumeAll
     */
-    resumeAll: function () {
+    resumeAll: function ()
+    {
 
         for (var i = this._tweens.length - 1; i >= 0; i--)
         {
             this._tweens[i].resume(true);
         }
+
+    },
+
+    /**
+    * Removes all tweens and deletes queues.
+    *
+    * @method Phaser.TweenManager#destroy
+    */
+    destroy: function ()
+    {
+
+        this.game.onPause.remove(this._pauseAll, this);
+        this.game.onResume.remove(this._resumeAll, this);
+
+        this.game = null;
+        this._add = null;
+        this._tweens = null;
 
     }
 

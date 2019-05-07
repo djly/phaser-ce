@@ -56,7 +56,8 @@
 * @param {string|Phaser.BitmapData|PIXI.Texture} key - This is the image or texture used by the TileSprite during rendering. It can be a string which is a reference to the Phaser Image Cache entry, or an instance of a PIXI.Texture or BitmapData.
 * @param {string|number} frame - If this TileSprite is using part of a sprite sheet or texture atlas you can specify the exact frame to use by giving a string or numeric index.
 */
-Phaser.TileSprite = function (game, x, y, width, height, key, frame) {
+Phaser.TileSprite = function (game, x, y, width, height, key, frame)
+{
 
     x = x || 0;
     y = y || 0;
@@ -65,9 +66,7 @@ Phaser.TileSprite = function (game, x, y, width, height, key, frame) {
     key = key || null;
     frame = frame || null;
 
-    var def = game.cache.getImage('__default', true);
-
-    PIXI.Sprite.call(this, new PIXI.Texture(def.base), width, height);
+    PIXI.Sprite.call(this, new PIXI.Texture(Phaser.Cache.DEFAULT.baseTexture), width, height);
 
     /**
     * @property {number} type - The const type of this object.
@@ -184,7 +183,8 @@ Phaser.TileSprite.prototype.preUpdateCore = Phaser.Component.Core.preUpdate;
 * @memberof Phaser.TileSprite
 * @return {boolean}
 */
-Phaser.TileSprite.prototype.preUpdate = function () {
+Phaser.TileSprite.prototype.preUpdate = function ()
+{
 
     if (this._scroll.x !== 0)
     {
@@ -217,7 +217,8 @@ Phaser.TileSprite.prototype.preUpdate = function () {
 * @param {number} y - Vertical scroll speed in pixels per second.
 * @return {Phaser.TileSprite} This instance.
 */
-Phaser.TileSprite.prototype.autoScroll = function (x, y) {
+Phaser.TileSprite.prototype.autoScroll = function (x, y)
+{
 
     this._scroll.set(x, y);
 
@@ -232,7 +233,8 @@ Phaser.TileSprite.prototype.autoScroll = function (x, y) {
 * @memberof Phaser.TileSprite
 * @return {Phaser.TileSprite} This instance.
 */
-Phaser.TileSprite.prototype.stopScroll = function () {
+Phaser.TileSprite.prototype.stopScroll = function ()
+{
 
     this._scroll.set(0, 0);
 
@@ -248,7 +250,8 @@ Phaser.TileSprite.prototype.stopScroll = function () {
 * @memberof Phaser.TileSprite
 * @param {boolean} [destroyChildren=true] - Should every child of this object have its destroy method called?
 */
-Phaser.TileSprite.prototype.destroy = function (destroyChildren) {
+Phaser.TileSprite.prototype.destroy = function (destroyChildren)
+{
 
     Phaser.Component.Destroy.prototype.destroy.call(this, destroyChildren);
 
@@ -283,7 +286,8 @@ Phaser.TileSprite.prototype.destroy = function (destroyChildren) {
 * @param {number} y - The y coordinate (in world space) to position the Sprite at.
 * @return {Phaser.TileSprite} This instance.
 */
-Phaser.TileSprite.prototype.reset = function (x, y) {
+Phaser.TileSprite.prototype.reset = function (x, y)
+{
 
     Phaser.Component.Reset.prototype.reset.call(this, x, y);
 
@@ -303,7 +307,8 @@ Phaser.TileSprite.prototype.reset = function (x, y) {
 * @param {PIXI.Texture} texture - The texture to apply to this TileSprite.
 * @return {Phaser.TileSprite} This instance.
 */
-Phaser.TileSprite.prototype.setTexture = function (texture) {
+Phaser.TileSprite.prototype.setTexture = function (texture)
+{
 
     if (this.texture !== texture)
     {
@@ -324,7 +329,8 @@ Phaser.TileSprite.prototype.setTexture = function (texture) {
 * @memberof Phaser.TileSprite
 * @param {object} renderSession
 */
-Phaser.TileSprite.prototype._renderWebGL = function (renderSession) {
+Phaser.TileSprite.prototype._renderWebGL = function (renderSession)
+{
 
     if (!this.visible || !this.renderable || this.alpha === 0)
     {
@@ -404,7 +410,8 @@ Phaser.TileSprite.prototype._renderWebGL = function (renderSession) {
 * @memberof Phaser.TileSprite
 * @param {object} renderSession
 */
-Phaser.TileSprite.prototype._renderCanvas = function (renderSession) {
+Phaser.TileSprite.prototype._renderCanvas = function (renderSession)
+{
 
     if (!this.visible || !this.renderable || this.alpha === 0)
     {
@@ -426,6 +433,15 @@ Phaser.TileSprite.prototype._renderCanvas = function (renderSession) {
     var ty = (wt.ty * resolution) + renderSession.shakeY;
 
     context.setTransform(wt.a * resolution, wt.b * resolution, wt.c * resolution, wt.d * resolution, tx, ty);
+
+    if (this.tint !== 0xFFFFFF && (this.texture.requiresReTint || this.cachedTint !== this.tint))
+    {
+        this.tintedTexture = PIXI.CanvasTinter.getTintedTexture(this, this.tint);
+
+        this.cachedTint = this.tint;
+        this.texture.requiresReTint = false;
+        this.refreshTexture = true;
+    }
 
     if (this.refreshTexture)
     {
@@ -509,9 +525,10 @@ Phaser.TileSprite.prototype._renderCanvas = function (renderSession) {
 * @method Phaser.TileSprite#onTextureUpdate
 * @memberof Phaser.TileSprite
 */
-Phaser.TileSprite.prototype.onTextureUpdate = function () {
+Phaser.TileSprite.prototype.onTextureUpdate = function ()
+{
 
-   // overriding the sprite version of this!
+    // overriding the sprite version of this!
 
 };
 
@@ -522,7 +539,8 @@ Phaser.TileSprite.prototype.onTextureUpdate = function () {
 * @memberof Phaser.TileSprite
 * @param {boolean} forcePowerOfTwo - Whether we want to force the texture to be a power of two
 */
-Phaser.TileSprite.prototype.generateTilingTexture = function (forcePowerOfTwo) {
+Phaser.TileSprite.prototype.generateTilingTexture = function (forcePowerOfTwo)
+{
 
     if (!this.texture.baseTexture.hasLoaded)
     {
@@ -581,8 +599,10 @@ Phaser.TileSprite.prototype.generateTilingTexture = function (forcePowerOfTwo) {
         h = targetHeight;
     }
 
+    var targetTexture = this.tintedTexture ? this.tintedTexture : texture.baseTexture.source;
+
     this.canvasBuffer.context.drawImage(
-        texture.baseTexture.source,
+        targetTexture,
         texture.crop.x,
         texture.crop.y,
         texture.crop.width,
@@ -609,7 +629,8 @@ Phaser.TileSprite.prototype.generateTilingTexture = function (forcePowerOfTwo) {
 * @memberof Phaser.TileSprite
 * @return {Phaser.Rectangle} The bounds of the Tile Sprite.
 */
-Phaser.TileSprite.prototype.getBounds = function () {
+Phaser.TileSprite.prototype.getBounds = function ()
+{
 
     var width = this._width;
     var height = this._height;
@@ -638,8 +659,8 @@ Phaser.TileSprite.prototype.getBounds = function () {
     var x3 = (a * w0) + (c * h0) + tx;
     var y3 = (d * h0) + (b * w0) + ty;
 
-    var x4 =  a * w1 + c * h0 + tx;
-    var y4 =  d * h0 + b * w1 + ty;
+    var x4 = a * w1 + c * h0 + tx;
+    var y4 = d * h0 + b * w1 + ty;
 
     var maxX = -Infinity;
     var maxY = -Infinity;
@@ -691,13 +712,15 @@ Phaser.TileSprite.prototype.getBounds = function () {
 */
 Object.defineProperty(Phaser.TileSprite.prototype, 'width', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this._width;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this._width = value;
 
@@ -713,13 +736,15 @@ Object.defineProperty(Phaser.TileSprite.prototype, 'width', {
 */
 Object.defineProperty(Phaser.TileSprite.prototype, 'height', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this._height;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this._height = value;
 

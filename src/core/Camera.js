@@ -17,7 +17,8 @@
 * @param {number} width - The width of the view rectangle
 * @param {number} height - The height of the view rectangle
 */
-Phaser.Camera = function (game, id, x, y, width, height) {
+Phaser.Camera = function (game, id, x, y, width, height)
+{
 
     /**
     * @property {Phaser.Game} game - A reference to the currently running Game.
@@ -180,27 +181,41 @@ Phaser.Camera = function (game, id, x, y, width, height) {
     */
     this._fxType = 0;
 
+    /**
+    * @property {Phaser.Rectangle}
+    * @private
+    */
+    this._fixedView = new Phaser.Rectangle();
+
 };
 
 /**
+* A follow style that uses no deadzone.
+*
 * @constant
 * @type {number}
 */
 Phaser.Camera.FOLLOW_LOCKON = 0;
 
 /**
+* A follow style that uses a tall, narrow deadzone (0.33 x 0.125) with a center slightly above the view center.
+*
 * @constant
 * @type {number}
 */
 Phaser.Camera.FOLLOW_PLATFORMER = 1;
 
 /**
+* A follow style that uses a square deadzone (0.25 of the larger view edge).
+*
 * @constant
 * @type {number}
 */
 Phaser.Camera.FOLLOW_TOPDOWN = 2;
 
 /**
+* A follow style that uses a small square deadzone (0.125 of the larger view edge).
+*
 * @constant
 * @type {number}
 */
@@ -238,7 +253,8 @@ Phaser.Camera.prototype = {
     * @method Phaser.Camera#boot
     * @private
     */
-    boot: function () {
+    boot: function ()
+    {
 
         this.displayObject = this.game.world;
 
@@ -260,7 +276,8 @@ Phaser.Camera.prototype = {
     *
     * @method Phaser.Camera#preUpdate
     */
-    preUpdate: function () {
+    preUpdate: function ()
+    {
 
         this.totalInView = 0;
 
@@ -277,11 +294,12 @@ Phaser.Camera.prototype = {
     *
     * @method Phaser.Camera#follow
     * @param {Phaser.Sprite|Phaser.Image|Phaser.Text} target - The object you want the camera to track. Set to null to not follow anything.
-    * @param {number} [style] - Leverage one of the existing "deadzone" presets. If you use a custom deadzone, ignore this parameter and manually specify the deadzone after calling follow().
+    * @param {number} [style] - Leverage one of the existing {@link deadzone} presets. If you use a custom deadzone, ignore this parameter and manually specify the deadzone after calling follow().
     * @param {float} [lerpX=1] - A value between 0 and 1. This value specifies the amount of linear interpolation to use when horizontally tracking the target. The closer the value to 1, the faster the camera will track.
     * @param {float} [lerpY=1] - A value between 0 and 1. This value specifies the amount of linear interpolation to use when vertically tracking the target. The closer the value to 1, the faster the camera will track.
     */
-    follow: function (target, style, lerpX, lerpY) {
+    follow: function (target, style, lerpX, lerpY)
+    {
 
         if (style === undefined) { style = Phaser.Camera.FOLLOW_LOCKON; }
         if (lerpX === undefined) { lerpX = 1; }
@@ -292,7 +310,8 @@ Phaser.Camera.prototype = {
 
         var helper;
 
-        switch (style) {
+        switch (style)
+        {
 
             case Phaser.Camera.FOLLOW_PLATFORMER:
                 var w = this.width / 8;
@@ -326,7 +345,8 @@ Phaser.Camera.prototype = {
     *
     * @method Phaser.Camera#unfollow
     */
-    unfollow: function () {
+    unfollow: function ()
+    {
 
         this.target = null;
 
@@ -337,7 +357,8 @@ Phaser.Camera.prototype = {
     * @method Phaser.Camera#focusOn
     * @param {any} displayObject - The display object to focus the camera on. Must have visible x/y properties.
     */
-    focusOn: function (displayObject) {
+    focusOn: function (displayObject)
+    {
 
         this.setPosition(Math.round(displayObject.x - this.view.halfWidth), Math.round(displayObject.y - this.view.halfHeight));
 
@@ -349,7 +370,8 @@ Phaser.Camera.prototype = {
     * @param {number} x - X position.
     * @param {number} y - Y position.
     */
-    focusOnXY: function (x, y) {
+    focusOnXY: function (x, y)
+    {
 
         this.setPosition(Math.round(x - this.view.halfWidth), Math.round(y - this.view.halfHeight));
 
@@ -370,7 +392,8 @@ Phaser.Camera.prototype = {
     * @param {boolean} [shakeBounds=true] - Is the effect allowed to shake the camera beyond its bounds (if set?).
     * @return {boolean} True if the shake effect was started, otherwise false.
     */
-    shake: function (intensity, duration, force, direction, shakeBounds) {
+    shake: function (intensity, duration, force, direction, shakeBounds)
+    {
 
         if (intensity === undefined) { intensity = 0.05; }
         if (duration === undefined) { duration = 500; }
@@ -413,7 +436,8 @@ Phaser.Camera.prototype = {
     * @param {numer} [alpha=1] - The alpha value of the color applied to the flash effect.
     * @return {boolean} True if the effect was started, otherwise false.
     */
-    flash: function (color, duration, force, alpha) {
+    flash: function (color, duration, force, alpha)
+    {
 
         if (color === undefined) { color = 0xffffff; }
         if (duration === undefined) { duration = 500; }
@@ -460,7 +484,8 @@ Phaser.Camera.prototype = {
     * @param {numer} [alpha=1] - The alpha value of the color applied to the fade effect.
     * @return {boolean} True if the effect was started, otherwise false.
     */
-    fade: function (color, duration, force, alpha) {
+    fade: function (color, duration, force, alpha)
+    {
 
         if (color === undefined) { color = 0x000000; }
         if (duration === undefined) { duration = 500; }
@@ -493,7 +518,8 @@ Phaser.Camera.prototype = {
     * @method Phaser.Camera#update
     * @protected
     */
-    update: function () {
+    update: function ()
+    {
 
         if (this._fxDuration > 0)
         {
@@ -528,7 +554,8 @@ Phaser.Camera.prototype = {
     * @method Phaser.Camera#updateFX
     * @private
     */
-    updateFX: function () {
+    updateFX: function ()
+    {
 
         if (this._fxType === 0)
         {
@@ -563,7 +590,8 @@ Phaser.Camera.prototype = {
     * @method Phaser.Camera#updateShake
     * @private
     */
-    updateShake: function () {
+    updateShake: function ()
+    {
 
         this._shake.duration -= this.game.time.elapsedMS;
 
@@ -594,7 +622,8 @@ Phaser.Camera.prototype = {
     * @method Phaser.Camera#updateTarget
     * @private
     */
-    updateTarget: function () {
+    updateTarget: function ()
+    {
 
         this._targetPosition.x = this.view.x + this.target.worldPosition.x;
         this._targetPosition.y = this.view.y + this.target.worldPosition.y;
@@ -649,7 +678,8 @@ Phaser.Camera.prototype = {
     *
     * @method Phaser.Camera#setBoundsToWorld
     */
-    setBoundsToWorld: function () {
+    setBoundsToWorld: function ()
+    {
 
         if (this.bounds)
         {
@@ -665,7 +695,8 @@ Phaser.Camera.prototype = {
     * @method Phaser.Camera#checkBounds
     * @protected
     */
-    checkBounds: function () {
+    checkBounds: function ()
+    {
 
         this.atLimit.x = false;
         this.atLimit.y = false;
@@ -732,7 +763,8 @@ Phaser.Camera.prototype = {
     * @param {number} x - X position.
     * @param {number} y - Y position.
     */
-    setPosition: function (x, y) {
+    setPosition: function (x, y)
+    {
 
         this.view.x = x;
         this.view.y = y;
@@ -751,7 +783,8 @@ Phaser.Camera.prototype = {
     * @param {number} width - The desired width.
     * @param {number} height - The desired height.
     */
-    setSize: function (width, height) {
+    setSize: function (width, height)
+    {
 
         this.view.width = width;
         this.view.height = height;
@@ -765,7 +798,8 @@ Phaser.Camera.prototype = {
     *
     * @method Phaser.Camera#reset
     */
-    reset: function () {
+    reset: function ()
+    {
 
         this.target = null;
 
@@ -773,6 +807,8 @@ Phaser.Camera.prototype = {
         this.view.y = 0;
 
         this._shake.duration = 0;
+        this._shake.x = 0;
+        this._shake.y = 0;
 
         this.resetFX();
 
@@ -784,7 +820,8 @@ Phaser.Camera.prototype = {
     *
     * @method Phaser.Camera#resetFX
     */
-    resetFX: function () {
+    resetFX: function ()
+    {
 
         if (this.fx)
         {
@@ -805,15 +842,17 @@ Phaser.Camera.prototype.constructor = Phaser.Camera;
 * @name Phaser.Camera#x
 * @property {number} x - Gets or sets the cameras x position.
 */
-Object.defineProperty(Phaser.Camera.prototype, "x", {
+Object.defineProperty(Phaser.Camera.prototype, 'x', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.view.x;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this.view.x = value;
 
@@ -830,15 +869,17 @@ Object.defineProperty(Phaser.Camera.prototype, "x", {
 * @name Phaser.Camera#y
 * @property {number} y - Gets or sets the cameras y position.
 */
-Object.defineProperty(Phaser.Camera.prototype, "y", {
+Object.defineProperty(Phaser.Camera.prototype, 'y', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.view.y;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this.view.y = value;
 
@@ -855,9 +896,10 @@ Object.defineProperty(Phaser.Camera.prototype, "y", {
 * @name Phaser.Camera#position
 * @property {Phaser.Point} position - Gets or sets the cameras xy position using Phaser.Point object.
 */
-Object.defineProperty(Phaser.Camera.prototype, "position", {
+Object.defineProperty(Phaser.Camera.prototype, 'position', {
 
-    get: function () {
+    get: function ()
+    {
 
         this._position.set(this.view.x, this.view.y);
 
@@ -865,10 +907,11 @@ Object.defineProperty(Phaser.Camera.prototype, "position", {
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
-        if (typeof value.x !== "undefined") { this.view.x = value.x; }
-        if (typeof value.y !== "undefined") { this.view.y = value.y; }
+        if (typeof value.x !== 'undefined') { this.view.x = value.x; }
+        if (typeof value.y !== 'undefined') { this.view.y = value.y; }
 
         if (this.bounds)
         {
@@ -883,15 +926,17 @@ Object.defineProperty(Phaser.Camera.prototype, "position", {
 * @name Phaser.Camera#width
 * @property {number} width - Gets or sets the cameras width.
 */
-Object.defineProperty(Phaser.Camera.prototype, "width", {
+Object.defineProperty(Phaser.Camera.prototype, 'width', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.view.width;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this.view.width = value;
 
@@ -904,15 +949,17 @@ Object.defineProperty(Phaser.Camera.prototype, "width", {
 * @name Phaser.Camera#height
 * @property {number} height - Gets or sets the cameras height.
 */
-Object.defineProperty(Phaser.Camera.prototype, "height", {
+Object.defineProperty(Phaser.Camera.prototype, 'height', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.view.height;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this.view.height = value;
 
@@ -926,17 +973,73 @@ Object.defineProperty(Phaser.Camera.prototype, "height", {
 * @name Phaser.Camera#shakeIntensity
 * @property {number} shakeIntensity - Gets or sets the cameras shake intensity.
 */
-Object.defineProperty(Phaser.Camera.prototype, "shakeIntensity", {
+Object.defineProperty(Phaser.Camera.prototype, 'shakeIntensity', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this._shake.intensity;
 
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         this._shake.intensity = value;
+
+    }
+
+});
+
+
+/**
+ * Immobile {@link #view} rectangle. Its top-left is always (0, 0). You can use this align fixedToCamera objects.
+ * @name Phaser.Camera#fixedView
+ * @property {Phaser.Rectangle} fixedView
+ * @readonly
+ */
+Object.defineProperty(Phaser.Camera.prototype, 'fixedView', {
+
+    get: function ()
+    {
+
+        this._fixedView.setTo(0, 0, this.view.width, this.view.height);
+
+        return this._fixedView;
+
+    }
+
+});
+
+/**
+ * The x position of the center of the Camera's viewport, relative to the top-left of the game canvas.
+ * @name Phaser.Camera#centerX
+ * @property {number} centerX
+ * @readonly
+ */
+Object.defineProperty(Phaser.Camera.prototype, 'centerX', {
+
+    get: function ()
+    {
+
+        return (this.x + (0.5 * this.width));
+
+    }
+
+});
+
+/**
+ * The y position of the center of the Camera's viewport, relative to the top-left of the game canvas.
+ * @name Phaser.Camera#centerY
+ * @property {number} centerY
+ * @readonly
+ */
+Object.defineProperty(Phaser.Camera.prototype, 'centerY', {
+
+    get: function ()
+    {
+
+        return (this.y + (0.5 * this.height));
 
     }
 

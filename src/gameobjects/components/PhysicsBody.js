@@ -18,7 +18,14 @@ Phaser.Component.PhysicsBody = function () {};
  *
  * @method
  */
-Phaser.Component.PhysicsBody.preUpdate = function () {
+Phaser.Component.PhysicsBody.preUpdate = function ()
+{
+
+    if (this.pendingDestroy)
+    {
+        this.destroy();
+        return false;
+    }
 
     if (this.fresh && this.exists)
     {
@@ -35,6 +42,8 @@ Phaser.Component.PhysicsBody.preUpdate = function () {
         }
 
         this.fresh = false;
+
+        this.preUpdateChildren();
 
         return false;
     }
@@ -58,7 +67,8 @@ Phaser.Component.PhysicsBody.preUpdate = function () {
  *
  * @method
  */
-Phaser.Component.PhysicsBody.postUpdate = function () {
+Phaser.Component.PhysicsBody.postUpdate = function ()
+{
 
     if (this.exists && this.body)
     {
@@ -97,13 +107,15 @@ Phaser.Component.PhysicsBody.prototype = {
     */
     x: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this.position.x;
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.position.x = value;
 
@@ -123,13 +135,15 @@ Phaser.Component.PhysicsBody.prototype = {
     */
     y: {
 
-        get: function () {
+        get: function ()
+        {
 
             return this.position.y;
 
         },
 
-        set: function (value) {
+        set: function (value)
+        {
 
             this.position.y = value;
 

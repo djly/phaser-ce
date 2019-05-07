@@ -15,7 +15,8 @@
 * @param {number} width - The width of the Rectangle. Should always be either zero or a positive value.
 * @param {number} height - The height of the Rectangle. Should always be either zero or a positive value.
 */
-Phaser.Rectangle = function (x, y, width, height) {
+Phaser.Rectangle = function (x, y, width, height)
+{
 
     x = x || 0;
     y = y || 0;
@@ -59,7 +60,8 @@ Phaser.Rectangle.prototype = {
     * @param {number} dy - Moves the y value of the Rectangle object by this amount.
     * @return {Phaser.Rectangle} This Rectangle object.
     */
-    offset: function (dx, dy) {
+    offset: function (dx, dy)
+    {
 
         this.x += dx;
         this.y += dy;
@@ -74,7 +76,8 @@ Phaser.Rectangle.prototype = {
     * @param {Phaser.Point} point - A Point object to use to offset this Rectangle object.
     * @return {Phaser.Rectangle} This Rectangle object.
     */
-    offsetPoint: function (point) {
+    offsetPoint: function (point)
+    {
 
         return this.offset(point.x, point.y);
 
@@ -89,7 +92,8 @@ Phaser.Rectangle.prototype = {
     * @param {number} height - The height of the Rectangle. Should always be either zero or a positive value.
     * @return {Phaser.Rectangle} This Rectangle object
     */
-    setTo: function (x, y, width, height) {
+    setTo: function (x, y, width, height)
+    {
 
         this.x = x;
         this.y = y;
@@ -102,13 +106,14 @@ Phaser.Rectangle.prototype = {
 
     /**
     * Scales the width and height of this Rectangle by the given amounts.
-    * 
+    *
     * @method Phaser.Rectangle#scale
     * @param {number} x - The amount to scale the width of the Rectangle by. A value of 0.5 would reduce by half, a value of 2 would double the width, etc.
     * @param {number} [y] - The amount to scale the height of the Rectangle by. A value of 0.5 would reduce by half, a value of 2 would double the height, etc.
     * @return {Phaser.Rectangle} This Rectangle object
     */
-    scale: function (x, y) {
+    scale: function (x, y)
+    {
 
         if (y === undefined) { y = x; }
 
@@ -127,7 +132,8 @@ Phaser.Rectangle.prototype = {
     * @param {number} y - The y coordinate to place the center of the Rectangle at.
     * @return {Phaser.Rectangle} This Rectangle object
     */
-    centerOn: function (x, y) {
+    centerOn: function (x, y)
+    {
 
         this.centerX = x;
         this.centerY = y;
@@ -140,7 +146,8 @@ Phaser.Rectangle.prototype = {
     * Runs Math.floor() on both the x and y values of this Rectangle.
     * @method Phaser.Rectangle#floor
     */
-    floor: function () {
+    floor: function ()
+    {
 
         this.x = Math.floor(this.x);
         this.y = Math.floor(this.y);
@@ -151,7 +158,8 @@ Phaser.Rectangle.prototype = {
     * Runs Math.floor() on the x, y, width and height values of this Rectangle.
     * @method Phaser.Rectangle#floorAll
     */
-    floorAll: function () {
+    floorAll: function ()
+    {
 
         this.x = Math.floor(this.x);
         this.y = Math.floor(this.y);
@@ -164,7 +172,8 @@ Phaser.Rectangle.prototype = {
     * Runs Math.ceil() on both the x and y values of this Rectangle.
     * @method Phaser.Rectangle#ceil
     */
-    ceil: function () {
+    ceil: function ()
+    {
 
         this.x = Math.ceil(this.x);
         this.y = Math.ceil(this.y);
@@ -175,7 +184,8 @@ Phaser.Rectangle.prototype = {
     * Runs Math.ceil() on the x, y, width and height values of this Rectangle.
     * @method Phaser.Rectangle#ceilAll
     */
-    ceilAll: function () {
+    ceilAll: function ()
+    {
 
         this.x = Math.ceil(this.x);
         this.y = Math.ceil(this.y);
@@ -190,9 +200,23 @@ Phaser.Rectangle.prototype = {
     * @param {any} source - The object to copy from.
     * @return {Phaser.Rectangle} This Rectangle object.
     */
-    copyFrom: function (source) {
+    copyFrom: function (source)
+    {
 
         return this.setTo(source.x, source.y, source.width, source.height);
+
+    },
+
+    /**
+    * Copies the left, top, width and height properties from any given object to this Rectangle.
+    * @method Phaser.Rectangle#copyFromBounds
+    * @param {any} source - The object to copy from.
+    * @return {Phaser.Rectangle} This Rectangle object.
+    */
+    copyFromBounds: function (source)
+    {
+
+        return this.setTo(source.left, source.top, source.width, source.height);
 
     },
 
@@ -202,7 +226,8 @@ Phaser.Rectangle.prototype = {
     * @param {any} source - The object to copy to.
     * @return {object} This object.
     */
-    copyTo: function (dest) {
+    copyTo: function (dest)
+    {
 
         dest.x = this.x;
         dest.y = this.y;
@@ -220,7 +245,8 @@ Phaser.Rectangle.prototype = {
     * @param {number} dy - The amount to be added to the bottom side of the Rectangle.
     * @return {Phaser.Rectangle} This Rectangle object.
     */
-    inflate: function (dx, dy) {
+    inflate: function (dx, dy)
+    {
 
         return Phaser.Rectangle.inflate(this, dx, dy);
 
@@ -232,7 +258,8 @@ Phaser.Rectangle.prototype = {
     * @param {Phaser.Point} [output] - Optional Point object. If given the values will be set into the object, otherwise a brand new Point object will be created and returned.
     * @return {Phaser.Point} The size of the Rectangle object.
     */
-    size: function (output) {
+    size: function (output)
+    {
 
         return Phaser.Rectangle.size(this, output);
 
@@ -241,13 +268,14 @@ Phaser.Rectangle.prototype = {
     /**
     * Resize the Rectangle by providing a new width and height.
     * The x and y positions remain unchanged.
-    * 
+    *
     * @method Phaser.Rectangle#resize
     * @param {number} width - The width of the Rectangle. Should always be either zero or a positive value.
     * @param {number} height - The height of the Rectangle. Should always be either zero or a positive value.
     * @return {Phaser.Rectangle} This Rectangle object
     */
-    resize: function (width, height) {
+    resize: function (width, height)
+    {
 
         this.width = width;
         this.height = height;
@@ -262,7 +290,8 @@ Phaser.Rectangle.prototype = {
     * @param {Phaser.Rectangle} [output] - Optional Rectangle object. If given the values will be set into the object, otherwise a brand new Rectangle object will be created and returned.
     * @return {Phaser.Rectangle}
     */
-    clone: function (output) {
+    clone: function (output)
+    {
 
         return Phaser.Rectangle.clone(this, output);
 
@@ -275,7 +304,8 @@ Phaser.Rectangle.prototype = {
     * @param {number} y - The y coordinate of the point to test.
     * @return {boolean} A value of true if the Rectangle object contains the specified point; otherwise false.
     */
-    contains: function (x, y) {
+    contains: function (x, y)
+    {
 
         return Phaser.Rectangle.contains(this, x, y);
 
@@ -288,7 +318,8 @@ Phaser.Rectangle.prototype = {
     * @param {Phaser.Rectangle} b - The second Rectangle object.
     * @return {boolean} A value of true if the Rectangle object contains the specified point; otherwise false.
     */
-    containsRect: function (b) {
+    containsRect: function (b)
+    {
 
         return Phaser.Rectangle.containsRect(b, this);
 
@@ -301,7 +332,8 @@ Phaser.Rectangle.prototype = {
     * @param {Phaser.Rectangle} b - The second Rectangle object.
     * @return {boolean} A value of true if the two Rectangles have exactly the same values for the x, y, width and height properties; otherwise false.
     */
-    equals: function (b) {
+    equals: function (b)
+    {
 
         return Phaser.Rectangle.equals(this, b);
 
@@ -314,7 +346,8 @@ Phaser.Rectangle.prototype = {
     * @param {Phaser.Rectangle} out - Optional Rectangle object. If given the intersection values will be set into this object, otherwise a brand new Rectangle object will be created and returned.
     * @return {Phaser.Rectangle} A Rectangle object that equals the area of intersection. If the Rectangles do not intersect, this method returns an empty Rectangle object; that is, a Rectangle with its x, y, width, and height properties set to 0.
     */
-    intersection: function (b, out) {
+    intersection: function (b, out)
+    {
 
         return Phaser.Rectangle.intersection(this, b, out);
 
@@ -323,12 +356,13 @@ Phaser.Rectangle.prototype = {
     /**
     * Determines whether this Rectangle and another given Rectangle intersect with each other.
     * This method checks the x, y, width, and height properties of the two Rectangles.
-    * 
+    *
     * @method Phaser.Rectangle#intersects
     * @param {Phaser.Rectangle} b - The second Rectangle object.
     * @return {boolean} A value of true if the specified object intersects with this Rectangle object; otherwise false.
     */
-    intersects: function (b) {
+    intersects: function (b)
+    {
 
         return Phaser.Rectangle.intersects(this, b);
 
@@ -345,7 +379,8 @@ Phaser.Rectangle.prototype = {
     * @param {number} tolerance - A tolerance value to allow for an intersection test with padding, default to 0
     * @return {boolean} A value of true if the specified object intersects with the Rectangle; otherwise false.
     */
-    intersectsRaw: function (left, right, top, bottom, tolerance) {
+    intersectsRaw: function (left, right, top, bottom, tolerance)
+    {
 
         return Phaser.Rectangle.intersectsRaw(this, left, right, top, bottom, tolerance);
 
@@ -358,7 +393,8 @@ Phaser.Rectangle.prototype = {
     * @param {Phaser.Rectangle} [out] - Optional Rectangle object. If given the new values will be set into this object, otherwise a brand new Rectangle object will be created and returned.
     * @return {Phaser.Rectangle} A Rectangle object that is the union of the two Rectangles.
     */
-    union: function (b, out) {
+    union: function (b, out)
+    {
 
         return Phaser.Rectangle.union(this, b, out);
 
@@ -366,13 +402,14 @@ Phaser.Rectangle.prototype = {
 
     /**
     * Returns a uniformly distributed random point from anywhere within this Rectangle.
-    * 
+    *
     * @method Phaser.Rectangle#random
     * @param {Phaser.Point|object} [out] - A Phaser.Point, or any object with public x/y properties, that the values will be set in.
     *     If no object is provided a new Phaser.Point object will be created. In high performance areas avoid this by re-using an existing object.
     * @return {Phaser.Point} An object containing the random point in its `x` and `y` properties.
     */
-    random: function (out) {
+    random: function (out)
+    {
 
         if (out === undefined) { out = new Phaser.Point(); }
 
@@ -385,21 +422,22 @@ Phaser.Rectangle.prototype = {
 
     /**
     * Returns a point based on the given position constant, which can be one of:
-    * 
+    *
     * `Phaser.TOP_LEFT`, `Phaser.TOP_CENTER`, `Phaser.TOP_RIGHT`, `Phaser.LEFT_CENTER`,
-    * `Phaser.CENTER`, `Phaser.RIGHT_CENTER`, `Phaser.BOTTOM_LEFT`, `Phaser.BOTTOM_CENTER` 
+    * `Phaser.CENTER`, `Phaser.RIGHT_CENTER`, `Phaser.BOTTOM_LEFT`, `Phaser.BOTTOM_CENTER`
     * and `Phaser.BOTTOM_RIGHT`.
     *
     * This method returns the same values as calling Rectangle.bottomLeft, etc, but those
     * calls always create a new Point object, where-as this one allows you to use your own.
-    * 
+    *
     * @method Phaser.Rectangle#getPoint
     * @param {integer} [position] - One of the Phaser position constants, such as `Phaser.TOP_RIGHT`.
     * @param {Phaser.Point} [out] - A Phaser.Point that the values will be set in.
     *     If no object is provided a new Phaser.Point object will be created. In high performance areas avoid this by re-using an existing object.
     * @return {Phaser.Point} An object containing the point in its `x` and `y` properties.
     */
-    getPoint: function (position, out) {
+    getPoint: function (position, out)
+    {
 
         if (out === undefined) { out = new Phaser.Point(); }
 
@@ -437,13 +475,54 @@ Phaser.Rectangle.prototype = {
     },
 
     /**
+     * Creates or positions four {@link Phaser.Line} lines representing the Rectangle's sides.
+     *
+     * @method Phaser.Rectangle#sides
+     * @param  {Phaser.Line} [top]
+     * @param  {Phaser.Line} [right]
+     * @param  {Phaser.Line} [bottom]
+     * @param  {Phaser.Line} [left]
+     * @return {?Phaser.Line[]} - An array containing four lines (if no arguments were given), or null.
+     */
+    sides: function (top, right, bottom, left)
+    {
+
+        if (!arguments.length)
+        {
+            top = new Phaser.Line();
+            right = new Phaser.Line();
+            bottom = new Phaser.Line();
+            left = new Phaser.Line();
+        }
+
+        var x1 = this.x;
+        var y1 = this.y;
+        var x2 = this.right;
+        var y2 = this.bottom;
+
+        top.setTo(x1, y1, x2, y1);
+        right.setTo(x2, y1, x2, y2);
+        bottom.setTo(x1, y2, x2, y2);
+        left.setTo(x1, y1, x1, y2);
+
+        if (!arguments.length)
+        {
+            return [ top, right, bottom, left ];
+        }
+
+        return null;
+
+    },
+
+    /**
     * Returns a string representation of this object.
     * @method Phaser.Rectangle#toString
     * @return {string} A string representation of the instance.
     */
-    toString: function () {
+    toString: function ()
+    {
 
-        return "[{Rectangle (x=" + this.x + " y=" + this.y + " width=" + this.width + " height=" + this.height + " empty=" + this.empty + ")}]";
+        return '[{Rectangle (x=' + this.x + ' y=' + this.y + ' width=' + this.width + ' height=' + this.height + ' empty=' + this.empty + ')}]';
 
     }
 
@@ -454,9 +533,10 @@ Phaser.Rectangle.prototype = {
 * @property {number} halfWidth - Half of the width of the Rectangle.
 * @readonly
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "halfWidth", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'halfWidth', {
 
-    get: function () {
+    get: function ()
+    {
         return Math.round(this.width / 2);
     }
 
@@ -467,9 +547,10 @@ Object.defineProperty(Phaser.Rectangle.prototype, "halfWidth", {
 * @property {number} halfHeight - Half of the height of the Rectangle.
 * @readonly
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "halfHeight", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'halfHeight', {
 
-    get: function () {
+    get: function ()
+    {
         return Math.round(this.height / 2);
     }
 
@@ -480,13 +561,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "halfHeight", {
 * @name Phaser.Rectangle#bottom
 * @property {number} bottom - The sum of the y and height properties.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "bottom", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'bottom', {
 
-    get: function () {
+    get: function ()
+    {
         return this.y + this.height;
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         if (value <= this.y)
         {
@@ -506,13 +589,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "bottom", {
 * @name Phaser.Rectangle#bottomLeft
 * @property {Phaser.Point} bottomLeft - Gets or sets the location of the Rectangles bottom left corner as a Point object.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "bottomLeft", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'bottomLeft', {
 
-    get: function () {
+    get: function ()
+    {
         return new Phaser.Point(this.x, this.bottom);
     },
 
-    set: function (value) {
+    set: function (value)
+    {
         this.x = value.x;
         this.bottom = value.y;
     }
@@ -524,13 +609,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "bottomLeft", {
 * @name Phaser.Rectangle#bottomRight
 * @property {Phaser.Point} bottomRight - Gets or sets the location of the Rectangles bottom right corner as a Point object.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "bottomRight", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'bottomRight', {
 
-    get: function () {
+    get: function ()
+    {
         return new Phaser.Point(this.right, this.bottom);
     },
 
-    set: function (value) {
+    set: function (value)
+    {
         this.right = value.x;
         this.bottom = value.y;
     }
@@ -542,16 +629,21 @@ Object.defineProperty(Phaser.Rectangle.prototype, "bottomRight", {
 * @name Phaser.Rectangle#left
 * @property {number} left - The x coordinate of the left of the Rectangle.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "left", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'left', {
 
-    get: function () {
+    get: function ()
+    {
         return this.x;
     },
 
-    set: function (value) {
-        if (value >= this.right) {
+    set: function (value)
+    {
+        if (value >= this.right)
+        {
             this.width = 0;
-        } else {
+        }
+        else
+        {
             this.width = this.right - value;
         }
         this.x = value;
@@ -564,16 +656,21 @@ Object.defineProperty(Phaser.Rectangle.prototype, "left", {
 * @name Phaser.Rectangle#right
 * @property {number} right - The sum of the x and width properties.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "right", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'right', {
 
-    get: function () {
+    get: function ()
+    {
         return this.x + this.width;
     },
 
-    set: function (value) {
-        if (value <= this.x) {
+    set: function (value)
+    {
+        if (value <= this.x)
+        {
             this.width = 0;
-        } else {
+        }
+        else
+        {
             this.width = value - this.x;
         }
     }
@@ -586,9 +683,10 @@ Object.defineProperty(Phaser.Rectangle.prototype, "right", {
 * @property {number} volume - The volume of the Rectangle derived from width * height.
 * @readonly
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "volume", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'volume', {
 
-    get: function () {
+    get: function ()
+    {
         return this.width * this.height;
     }
 
@@ -600,9 +698,10 @@ Object.defineProperty(Phaser.Rectangle.prototype, "volume", {
 * @property {number} perimeter - The perimeter size of the Rectangle. This is the sum of all 4 sides.
 * @readonly
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "perimeter", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'perimeter', {
 
-    get: function () {
+    get: function ()
+    {
         return (this.width * 2) + (this.height * 2);
     }
 
@@ -613,13 +712,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "perimeter", {
 * @name Phaser.Rectangle#centerX
 * @property {number} centerX - The x coordinate of the center of the Rectangle.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "centerX", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'centerX', {
 
-    get: function () {
+    get: function ()
+    {
         return this.x + this.halfWidth;
     },
 
-    set: function (value) {
+    set: function (value)
+    {
         this.x = value - this.halfWidth;
     }
 
@@ -630,13 +731,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "centerX", {
 * @name Phaser.Rectangle#centerY
 * @property {number} centerY - The y coordinate of the center of the Rectangle.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "centerY", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'centerY', {
 
-    get: function () {
+    get: function ()
+    {
         return this.y + this.halfHeight;
     },
 
-    set: function (value) {
+    set: function (value)
+    {
         this.y = value - this.halfHeight;
     }
 
@@ -648,9 +751,10 @@ Object.defineProperty(Phaser.Rectangle.prototype, "centerY", {
 * @name Phaser.Rectangle#randomX
 * @property {number} randomX - A random value between the left and right values (inclusive) of the Rectangle.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "randomX", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'randomX', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.x + (Math.random() * this.width);
 
@@ -664,9 +768,10 @@ Object.defineProperty(Phaser.Rectangle.prototype, "randomX", {
 * @name Phaser.Rectangle#randomY
 * @property {number} randomY - A random value between the top and bottom values (inclusive) of the Rectangle.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "randomY", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'randomY', {
 
-    get: function () {
+    get: function ()
+    {
 
         return this.y + (Math.random() * this.height);
 
@@ -680,17 +785,22 @@ Object.defineProperty(Phaser.Rectangle.prototype, "randomY", {
 * @name Phaser.Rectangle#top
 * @property {number} top - The y coordinate of the top of the Rectangle.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "top", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'top', {
 
-    get: function () {
+    get: function ()
+    {
         return this.y;
     },
 
-    set: function (value) {
-        if (value >= this.bottom) {
+    set: function (value)
+    {
+        if (value >= this.bottom)
+        {
             this.height = 0;
             this.y = value;
-        } else {
+        }
+        else
+        {
             this.height = (this.bottom - value);
         }
     }
@@ -702,13 +812,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "top", {
 * @name Phaser.Rectangle#topLeft
 * @property {Phaser.Point} topLeft - The location of the Rectangles top left corner as a Point object.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "topLeft", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'topLeft', {
 
-    get: function () {
+    get: function ()
+    {
         return new Phaser.Point(this.x, this.y);
     },
 
-    set: function (value) {
+    set: function (value)
+    {
         this.x = value.x;
         this.y = value.y;
     }
@@ -720,13 +832,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "topLeft", {
 * @name Phaser.Rectangle#topRight
 * @property {Phaser.Point} topRight - The location of the Rectangles top left corner as a Point object.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "topRight", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'topRight', {
 
-    get: function () {
+    get: function ()
+    {
         return new Phaser.Point(this.x + this.width, this.y);
     },
 
-    set: function (value) {
+    set: function (value)
+    {
         this.right = value.x;
         this.y = value.y;
     }
@@ -739,13 +853,15 @@ Object.defineProperty(Phaser.Rectangle.prototype, "topRight", {
 * @name Phaser.Rectangle#empty
 * @property {boolean} empty - Gets or sets the Rectangles empty state.
 */
-Object.defineProperty(Phaser.Rectangle.prototype, "empty", {
+Object.defineProperty(Phaser.Rectangle.prototype, 'empty', {
 
-    get: function () {
+    get: function ()
+    {
         return (!this.width || !this.height);
     },
 
-    set: function (value) {
+    set: function (value)
+    {
 
         if (value === true)
         {
@@ -766,7 +882,8 @@ Phaser.Rectangle.prototype.constructor = Phaser.Rectangle;
 * @param {number} dy - The amount to be added to the bottom side of the Rectangle.
 * @return {Phaser.Rectangle} This Rectangle object.
 */
-Phaser.Rectangle.inflate = function (a, dx, dy) {
+Phaser.Rectangle.inflate = function (a, dx, dy)
+{
 
     a.x -= dx;
     a.width += 2 * dx;
@@ -784,7 +901,8 @@ Phaser.Rectangle.inflate = function (a, dx, dy) {
 * @param {Phaser.Point} point - The x property of this Point object is used to increase the horizontal dimension of the Rectangle object. The y property is used to increase the vertical dimension of the Rectangle object.
 * @return {Phaser.Rectangle} The Rectangle object.
 */
-Phaser.Rectangle.inflatePoint = function (a, point) {
+Phaser.Rectangle.inflatePoint = function (a, point)
+{
 
     return Phaser.Rectangle.inflate(a, point.x, point.y);
 
@@ -797,7 +915,8 @@ Phaser.Rectangle.inflatePoint = function (a, point) {
 * @param {Phaser.Point} [output] - Optional Point object. If given the values will be set into the object, otherwise a brand new Point object will be created and returned.
 * @return {Phaser.Point} The size of the Rectangle object
 */
-Phaser.Rectangle.size = function (a, output) {
+Phaser.Rectangle.size = function (a, output)
+{
 
     if (output === undefined || output === null)
     {
@@ -819,7 +938,8 @@ Phaser.Rectangle.size = function (a, output) {
 * @param {Phaser.Rectangle} [output] - Optional Rectangle object. If given the values will be set into the object, otherwise a brand new Rectangle object will be created and returned.
 * @return {Phaser.Rectangle}
 */
-Phaser.Rectangle.clone = function (a, output) {
+Phaser.Rectangle.clone = function (a, output)
+{
 
     if (output === undefined || output === null)
     {
@@ -835,6 +955,25 @@ Phaser.Rectangle.clone = function (a, output) {
 };
 
 /**
+* Returns a new Rectangle object with the same values for the left, top, width, and height properties as the original object.
+* @method Phaser.Rectangle.createFromBounds
+* @param {any} a - An object with `left`, `top`, `width`, and `height` properties.
+* @param {Phaser.Rectangle} [output] - Optional Rectangle object. If given the values will be set into the object, otherwise a brand new Rectangle object will be created and returned.
+* @return {Phaser.Rectangle}
+*/
+Phaser.Rectangle.createFromBounds = function (a, output)
+{
+
+    if (output === undefined || output === null)
+    {
+        output = new Phaser.Rectangle(a.x, a.y, a.width, a.height);
+    }
+
+    return output.copyFromBounds(a);
+
+};
+
+/**
 * Determines whether the specified coordinates are contained within the region defined by this Rectangle object.
 * @method Phaser.Rectangle.contains
 * @param {Phaser.Rectangle} a - The Rectangle object.
@@ -842,7 +981,8 @@ Phaser.Rectangle.clone = function (a, output) {
 * @param {number} y - The y coordinate of the point to test.
 * @return {boolean} A value of true if the Rectangle object contains the specified point; otherwise false.
 */
-Phaser.Rectangle.contains = function (a, x, y) {
+Phaser.Rectangle.contains = function (a, x, y)
+{
 
     if (a.width <= 0 || a.height <= 0)
     {
@@ -864,7 +1004,8 @@ Phaser.Rectangle.contains = function (a, x, y) {
 * @param {number} y - The y coordinate of the point to test.
 * @return {boolean} A value of true if the Rectangle object contains the specified point; otherwise false.
 */
-Phaser.Rectangle.containsRaw = function (rx, ry, rw, rh, x, y) {
+Phaser.Rectangle.containsRaw = function (rx, ry, rw, rh, x, y)
+{
 
     return (x >= rx && x < (rx + rw) && y >= ry && y < (ry + rh));
 
@@ -877,7 +1018,8 @@ Phaser.Rectangle.containsRaw = function (rx, ry, rw, rh, x, y) {
 * @param {Phaser.Point} point - The point object being checked. Can be Point or any object with .x and .y values.
 * @return {boolean} A value of true if the Rectangle object contains the specified point; otherwise false.
 */
-Phaser.Rectangle.containsPoint = function (a, point) {
+Phaser.Rectangle.containsPoint = function (a, point)
+{
 
     return Phaser.Rectangle.contains(a, point.x, point.y);
 
@@ -891,7 +1033,8 @@ Phaser.Rectangle.containsPoint = function (a, point) {
 * @param {Phaser.Rectangle} b - The second Rectangle object.
 * @return {boolean} A value of true if the Rectangle object contains the specified point; otherwise false.
 */
-Phaser.Rectangle.containsRect = function (a, b) {
+Phaser.Rectangle.containsRect = function (a, b)
+{
 
     //  If the given rect has a larger volume than this one then it can never contain it
     if (a.volume > b.volume)
@@ -911,7 +1054,8 @@ Phaser.Rectangle.containsRect = function (a, b) {
 * @param {Phaser.Rectangle} b - The second Rectangle object.
 * @return {boolean} A value of true if the two Rectangles have exactly the same values for the x, y, width and height properties; otherwise false.
 */
-Phaser.Rectangle.equals = function (a, b) {
+Phaser.Rectangle.equals = function (a, b)
+{
 
     return (a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height);
 
@@ -924,7 +1068,8 @@ Phaser.Rectangle.equals = function (a, b) {
 * @param {Rectangle-like} b - The second Rectangle object.
 * @return {boolean} True if the object have equivalent values for the width and height properties.
 */
-Phaser.Rectangle.sameDimensions = function (a, b) {
+Phaser.Rectangle.sameDimensions = function (a, b)
+{
 
     return (a.width === b.width && a.height === b.height);
 
@@ -938,7 +1083,8 @@ Phaser.Rectangle.sameDimensions = function (a, b) {
 * @param {Phaser.Rectangle} [output] - Optional Rectangle object. If given the intersection values will be set into this object, otherwise a brand new Rectangle object will be created and returned.
 * @return {Phaser.Rectangle} A Rectangle object that equals the area of intersection. If the Rectangles do not intersect, this method returns an empty Rectangle object; that is, a Rectangle with its x, y, width, and height properties set to 0.
 */
-Phaser.Rectangle.intersection = function (a, b, output) {
+Phaser.Rectangle.intersection = function (a, b, output)
+{
 
     if (output === undefined)
     {
@@ -965,7 +1111,8 @@ Phaser.Rectangle.intersection = function (a, b, output) {
 * @param {Phaser.Rectangle} b - The second Rectangle object.
 * @return {boolean} A value of true if the specified object intersects with this Rectangle object; otherwise false.
 */
-Phaser.Rectangle.intersects = function (a, b) {
+Phaser.Rectangle.intersects = function (a, b)
+{
 
     if (a.width <= 0 || a.height <= 0 || b.width <= 0 || b.height <= 0)
     {
@@ -986,7 +1133,8 @@ Phaser.Rectangle.intersects = function (a, b) {
 * @param {number} tolerance - A tolerance value to allow for an intersection test with padding, default to 0
 * @return {boolean} A value of true if the specified object intersects with the Rectangle; otherwise false.
 */
-Phaser.Rectangle.intersectsRaw = function (a, left, right, top, bottom, tolerance) {
+Phaser.Rectangle.intersectsRaw = function (a, left, right, top, bottom, tolerance)
+{
 
     if (tolerance === undefined) { tolerance = 0; }
 
@@ -1002,7 +1150,8 @@ Phaser.Rectangle.intersectsRaw = function (a, left, right, top, bottom, toleranc
 * @param {Phaser.Rectangle} [output] - Optional Rectangle object. If given the new values will be set into this object, otherwise a brand new Rectangle object will be created and returned.
 * @return {Phaser.Rectangle} A Rectangle object that is the union of the two Rectangles.
 */
-Phaser.Rectangle.union = function (a, b, output) {
+Phaser.Rectangle.union = function (a, b, output)
+{
 
     if (output === undefined)
     {
@@ -1016,15 +1165,16 @@ Phaser.Rectangle.union = function (a, b, output) {
 /**
 * Calculates the Axis Aligned Bounding Box (or aabb) from an array of points.
 *
-* @method Phaser.Rectangle#aabb
+* @method Phaser.Rectangle.aabb
 * @param {Phaser.Point[]} points - The array of one or more points.
 * @param {Phaser.Rectangle} [out] - Optional Rectangle to store the value in, if not supplied a new Rectangle object will be created.
 * @return {Phaser.Rectangle} The new Rectangle object.
-* @static
 */
-Phaser.Rectangle.aabb = function(points, out) {
+Phaser.Rectangle.aabb = function (points, out)
+{
 
-    if (out === undefined) {
+    if (out === undefined)
+    {
         out = new Phaser.Rectangle();
     }
 
@@ -1033,18 +1183,23 @@ Phaser.Rectangle.aabb = function(points, out) {
         yMax = Number.NEGATIVE_INFINITY,
         yMin = Number.POSITIVE_INFINITY;
 
-    points.forEach(function(point) {
-        if (point.x > xMax) {
+    points.forEach(function (point)
+    {
+        if (point.x > xMax)
+        {
             xMax = point.x;
         }
-        if (point.x < xMin) {
+        if (point.x < xMin)
+        {
             xMin = point.x;
         }
 
-        if (point.y > yMax) {
+        if (point.y > yMax)
+        {
             yMax = point.y;
         }
-        if (point.y < yMin) {
+        if (point.y < yMin)
+        {
             yMin = point.y;
         }
     });
@@ -1056,4 +1211,10 @@ Phaser.Rectangle.aabb = function(points, out) {
 
 //   Because PIXI uses its own Rectangle, we'll replace it with ours to avoid duplicating code or confusion.
 PIXI.Rectangle = Phaser.Rectangle;
-PIXI.EmptyRectangle = new Phaser.Rectangle(0, 0, 0, 0);
+
+/**
+* A Rectangle with width and height zero.
+* @constant Phaser.EmptyRectangle
+* @type {Phaser.Rectangle}
+*/
+Phaser.EmptyRectangle = new Phaser.Rectangle(0, 0, 0, 0);

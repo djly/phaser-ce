@@ -3,40 +3,40 @@
  */
 
 /**
-* @method initDefaultShaders
+* @method PIXI.initDefaultShaders
 * @static
 * @private
 */
-PIXI.initDefaultShaders = function()
+PIXI.initDefaultShaders = function ()
 {
 };
 
 /**
-* @method CompileVertexShader
+* @method PIXI.CompileVertexShader
 * @static
 * @param gl {WebGLContext} the current WebGL drawing context
 * @param shaderSrc {Array}
 * @return {Any}
 */
-PIXI.CompileVertexShader = function(gl, shaderSrc)
+PIXI.CompileVertexShader = function (gl, shaderSrc)
 {
     return PIXI._CompileShader(gl, shaderSrc, gl.VERTEX_SHADER);
 };
 
 /**
-* @method CompileFragmentShader
+* @method PIXI.CompileFragmentShader
 * @static
 * @param gl {WebGLContext} the current WebGL drawing context
 * @param shaderSrc {Array}
 * @return {Any}
 */
-PIXI.CompileFragmentShader = function(gl, shaderSrc)
+PIXI.CompileFragmentShader = function (gl, shaderSrc)
 {
     return PIXI._CompileShader(gl, shaderSrc, gl.FRAGMENT_SHADER);
 };
 
 /**
-* @method _CompileShader
+* @method PIXI._CompileShader
 * @static
 * @private
 * @param gl {WebGLContext} the current WebGL drawing context
@@ -44,13 +44,13 @@ PIXI.CompileFragmentShader = function(gl, shaderSrc)
 * @param shaderType {Number}
 * @return {Any}
 */
-PIXI._CompileShader = function(gl, shaderSrc, shaderType)
+PIXI._CompileShader = function (gl, shaderSrc, shaderType)
 {
     var src = shaderSrc;
 
     if (Array.isArray(shaderSrc))
     {
-        src = shaderSrc.join("\n");
+        src = shaderSrc.join('\n');
     }
 
     var shader = gl.createShader(shaderType);
@@ -67,14 +67,14 @@ PIXI._CompileShader = function(gl, shaderSrc, shaderType)
 };
 
 /**
-* @method compileProgram
+* @method PIXI.compileProgram
 * @static
 * @param gl {WebGLContext} the current WebGL drawing context
 * @param vertexSrc {Array}
 * @param fragmentSrc {Array}
 * @return {Any}
 */
-PIXI.compileProgram = function(gl, vertexSrc, fragmentSrc)
+PIXI.compileProgram = function (gl, vertexSrc, fragmentSrc)
 {
     var fragmentShader = PIXI.CompileFragmentShader(gl, fragmentSrc);
     var vertexShader = PIXI.CompileVertexShader(gl, vertexSrc);
@@ -88,7 +88,7 @@ PIXI.compileProgram = function(gl, vertexSrc, fragmentSrc)
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS))
     {
         window.console.log(gl.getProgramInfoLog(shaderProgram));
-        window.console.log("Could not initialise shaders");
+        window.console.log('Could not initialise shaders');
     }
 
     return shaderProgram;

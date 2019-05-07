@@ -17,7 +17,8 @@
 * @param {Phaser.Game} game - Current game instance.
 * @param {Phaser.TweenManager} manager - The TweenManager responsible for looking after this Tween.
 */
-Phaser.Tween = function (target, game, manager) {
+Phaser.Tween = function (target, game, manager)
+{
 
     /**
     * @property {Phaser.Game} game - A reference to the currently running Game.
@@ -79,7 +80,7 @@ Phaser.Tween = function (target, game, manager) {
     /**
     * The onLoop event is fired if the Tween, or any child tweens loop.
     * It will be sent 2 parameters: the target object and this tween.
-    * 
+    *
     * @property {Phaser.Signal} onLoop
     */
     this.onLoop = new Phaser.Signal();
@@ -185,6 +186,34 @@ Phaser.Tween = function (target, game, manager) {
     this._hasStarted = false;
 };
 
+/**
+* A helper for tweening {@link Phaser.Color.createColor color objects}.
+*
+* It can be passed to {@link #onUpdateCallback}.
+*
+* ```javascript
+* var color = Phaser.Color.createColor(255, 0, 0); // red
+*
+* var tween = game.add.tween(color).to({
+*     r: 0, g: 0, b: 255 // blue
+* });
+*
+* tween.onUpdateCallback(Phaser.Tween.updateColor);
+*
+* tween.start();
+* ```
+*
+* @method Phaser.Tween.updateColor
+* @static
+* @param {Phaser.Tween} tween - A Tween with a {@link #target} that is a {@link Phaser.Color.createColor color object}.
+*/
+Phaser.Tween.updateColor = function (tween)
+{
+
+    Phaser.Color.updateColor(tween.target);
+
+};
+
 Phaser.Tween.prototype = {
 
     /**
@@ -203,7 +232,8 @@ Phaser.Tween.prototype = {
     * @param {boolean} [yoyo=false] - A tween that yoyos will reverse itself and play backwards automatically. A yoyo'd tween doesn't fire the Tween.onComplete event, so listen for Tween.onLoop instead.
     * @return {Phaser.Tween} This Tween object.
     */
-    to: function (properties, duration, ease, autoStart, delay, repeat, yoyo) {
+    to: function (properties, duration, ease, autoStart, delay, repeat, yoyo)
+    {
 
         if (duration === undefined || duration <= 0) { duration = 1000; }
         if (ease === undefined || ease === null) { ease = Phaser.Easing.Default; }
@@ -250,7 +280,8 @@ Phaser.Tween.prototype = {
     * @param {boolean} [yoyo=false] - A tween that yoyos will reverse itself and play backwards automatically. A yoyo'd tween doesn't fire the Tween.onComplete event, so listen for Tween.onLoop instead.
     * @return {Phaser.Tween} This Tween object.
     */
-    from: function (properties, duration, ease, autoStart, delay, repeat, yoyo) {
+    from: function (properties, duration, ease, autoStart, delay, repeat, yoyo)
+    {
 
         if (duration === undefined) { duration = 1000; }
         if (ease === undefined || ease === null) { ease = Phaser.Easing.Default; }
@@ -282,17 +313,26 @@ Phaser.Tween.prototype = {
     },
 
     /**
-    * Starts the tween running. Can also be called by the autoStart parameter of `Tween.to` or `Tween.from`.
-    * This sets the `Tween.isRunning` property to `true` and dispatches a `Tween.onStart` signal.
-    * If the Tween has a delay set then nothing will start tweening until the delay has expired.
+    * Starts the tween running. Can also be called by the `autoStart` parameter of {@link #to} or {@link #from}.
+    * This sets the {@link #isRunning} property to `true` and dispatches the {@link #onStart} signal.
+    * If the tween has a delay set then nothing will start tweening until the delay has expired.
+    * If the tween is already running, is flagged for deletion (such as after {@link #stop}),
+    * or has an empty timeline, calling start has no effect and the `onStart` signal is not dispatched.
     *
     * @method Phaser.Tween#start
     * @param {number} [index=0] - If this Tween contains child tweens you can specify which one to start from. The default is zero, i.e. the first tween created.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    start: function (index) {
+    start: function (index)
+    {
 
         if (index === undefined) { index = 0; }
+
+        if (this.pendingDelete)
+        {
+            console.warn('Phaser.Tween.start cannot be called after Tween.stop');
+            return this;
+        }
 
         if (this.game === null || this.target === null || this.timeline.length === 0 || this.isRunning)
         {
@@ -338,15 +378,17 @@ Phaser.Tween.prototype = {
     },
 
     /**
-    * Stops the tween if running and flags it for deletion from the TweenManager.
-    * If called directly the `Tween.onComplete` signal is not dispatched and no chained tweens are started unless the complete parameter is set to `true`.
-    * If you just wish to pause a tween then use Tween.pause instead.
+    * Stops the tween if running and flags it for deletion from the TweenManager. The tween can't be {@link #start restarted} after this.
+    * The {@link #onComplete} signal is not dispatched and no chained tweens are started unless the `complete` parameter is set to `true`.
+    * If you just wish to pause a tween then use {@link #pause} instead.
+    * If the tween is not running, it is **not** flagged for deletion and can be started again.
     *
     * @method Phaser.Tween#stop
     * @param {boolean} [complete=false] - Set to `true` to dispatch the Tween.onComplete signal.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    stop: function (complete) {
+    stop: function (complete)
+    {
 
         if (complete === undefined) { complete = false; }
 
@@ -383,7 +425,8 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set the delay on all the children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    updateTweenData: function (property, value, index) {
+    updateTweenData: function (property, value, index)
+    {
 
         if (this.timeline.length === 0) { return this; }
 
@@ -416,7 +459,8 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set the delay on all the children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    delay: function (duration, index) {
+    delay: function (duration, index)
+    {
 
         return this.updateTweenData('delay', duration, index);
 
@@ -434,11 +478,13 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set the repeat value on all the children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    repeat: function (total, repeatDelay, index) {
+    repeat: function (total, repeatDelay, index)
+    {
 
         if (repeatDelay === undefined) { repeatDelay = 0; }
 
         this.updateTweenData('repeatCounter', total, index);
+        this.updateTweenData('repeatTotal', total, index);
 
         return this.updateTweenData('repeatDelay', repeatDelay, index);
 
@@ -455,7 +501,8 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set the repeatDelay on all the children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    repeatDelay: function (duration, index) {
+    repeatDelay: function (duration, index)
+    {
 
         return this.updateTweenData('repeatDelay', duration, index);
 
@@ -474,7 +521,8 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set yoyo on all the children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    yoyo: function(enable, yoyoDelay, index) {
+    yoyo: function (enable, yoyoDelay, index)
+    {
 
         if (yoyoDelay === undefined) { yoyoDelay = 0; }
 
@@ -495,7 +543,8 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set the yoyoDelay on all the children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    yoyoDelay: function (duration, index) {
+    yoyoDelay: function (duration, index)
+    {
 
         return this.updateTweenData('yoyoDelay', duration, index);
 
@@ -512,7 +561,8 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set the easing function on all children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    easing: function (ease, index) {
+    easing: function (ease, index)
+    {
 
         if (typeof ease === 'string' && this.manager.easeMap[ease])
         {
@@ -535,7 +585,8 @@ Phaser.Tween.prototype = {
     * @param {number} [index=0] - If this tween has more than one child this allows you to target a specific child. If set to -1 it will set the interpolation function on all children.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    interpolation: function (interpolation, context, index) {
+    interpolation: function (interpolation, context, index)
+    {
 
         if (context === undefined) { context = Phaser.Math; }
 
@@ -553,7 +604,8 @@ Phaser.Tween.prototype = {
     * @param {number} [total=0] - How many times this tween and all children should repeat before completing. Set to zero to remove an active repeat. Set to -1 to repeat forever.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    repeatAll: function (total) {
+    repeatAll: function (total)
+    {
 
         if (total === undefined) { total = 0; }
 
@@ -577,7 +629,8 @@ Phaser.Tween.prototype = {
     * @param {...Phaser.Tween} tweens - One or more tweens that will be chained to this one.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    chain: function () {
+    chain: function ()
+    {
 
         var i = arguments.length;
 
@@ -613,7 +666,8 @@ Phaser.Tween.prototype = {
     * @param {boolean} [value=true] - If `true` this tween will loop once it reaches the end. Set to `false` to remove an active loop.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    loop: function (value) {
+    loop: function (value)
+    {
 
         if (value === undefined) { value = true; }
 
@@ -626,12 +680,21 @@ Phaser.Tween.prototype = {
     /**
     * Sets a callback to be fired each time this tween updates.
     *
+    * The callback receives the current Tween, the {@link Phaser.TweenData#value 'value' of the current TweenData}, and the current {@link Phaser.TweenData TweenData}. The second parameter is most useful.
+    *
+    * ```javascript
+    * tween.onUpdateCallback(function (tween, value, tweenData) {
+    *   console.log('Tween running -- percent: %.2f value: %.2f', tweenData.percent, value);
+    * });
+    * ```
+    *
     * @method Phaser.Tween#onUpdateCallback
     * @param {function} callback - The callback to invoke each time this tween is updated. Set to `null` to remove an already active callback.
     * @param {object} callbackContext - The context in which to call the onUpdate callback.
     * @return {Phaser.Tween} This tween. Useful for method chaining.
     */
-    onUpdateCallback: function (callback, callbackContext) {
+    onUpdateCallback: function (callback, callbackContext)
+    {
 
         this._onUpdateCallback = callback;
         this._onUpdateCallbackContext = callbackContext;
@@ -645,7 +708,8 @@ Phaser.Tween.prototype = {
     *
     * @method Phaser.Tween#pause
     */
-    pause: function () {
+    pause: function ()
+    {
 
         this.isPaused = true;
 
@@ -661,7 +725,8 @@ Phaser.Tween.prototype = {
     * @private
     * @method Phaser.Tween#_pause
     */
-    _pause: function () {
+    _pause: function ()
+    {
 
         if (!this._codePaused)
         {
@@ -677,7 +742,8 @@ Phaser.Tween.prototype = {
     *
     * @method Phaser.Tween#resume
     */
-    resume: function () {
+    resume: function ()
+    {
 
         if (this.isPaused)
         {
@@ -701,7 +767,8 @@ Phaser.Tween.prototype = {
     * @method Phaser.Tween#_resume
     * @private
     */
-    _resume: function () {
+    _resume: function ()
+    {
 
         if (this._codePaused)
         {
@@ -721,7 +788,8 @@ Phaser.Tween.prototype = {
     * @param {number} time - A timestamp passed in by the TweenManager.
     * @return {boolean} false if the tween and all child tweens have completed and should be deleted from the manager, otherwise true (still active).
     */
-    update: function (time) {
+    update: function (time)
+    {
 
         if (this.pendingDelete || !this.target)
         {
@@ -848,7 +916,8 @@ Phaser.Tween.prototype = {
     * @param {array} [data] - If given the generated data will be appended to this array, otherwise a new array will be returned.
     * @return {array} An array of tweened values.
     */
-    generateData: function (frameRate, data) {
+    generateData: function (frameRate, data)
+    {
 
         if (this.game === null || this.target === null)
         {
@@ -892,11 +961,12 @@ Phaser.Tween.prototype = {
 
 /**
 * @name Phaser.Tween#totalDuration
-* @property {Phaser.TweenData} totalDuration - Gets the total duration of this Tween, including all child tweens, in milliseconds.
+* @property {number} totalDuration - Gets the total duration of this Tween, including all child tweens, in milliseconds.
 */
 Object.defineProperty(Phaser.Tween.prototype, 'totalDuration', {
 
-    get: function () {
+    get: function ()
+    {
 
         var total = 0;
 
